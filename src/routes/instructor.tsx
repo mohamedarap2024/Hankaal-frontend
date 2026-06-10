@@ -1,0 +1,234 @@
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { RoleAccessLogin } from "@/components/auth/RoleAccessLogin";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
+import { BookOpen, Plus, Clock, Pencil, PlayCircle, Trash2 } from "lucide-react";
+import { DashboardLayout, DashboardSection, ContentCard } from "@/components/dashboard/DashboardLayout";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { useAuth } from "@/contexts/AuthContext";
+import { CourseForm } from "@/components/courses/CourseForm";
+import {
+  fetchInstructorCourses,
+  createInstructorCourse,
+  updateInstructorCourse,
+  deleteInstructorCourse,
+  courseToFormValues,
+} from "@/lib/api/instructor";
+import type { Course } from "@/lib/types";
+import type { QuizInput } from "@/lib/api/instructor";
+import { toast } from "sonner";
+import { ApiError } from "@/lib/api/client";
+
+export const Route = createFileRoute("/instructor")({
+  component: InstructorPage,
+});
+
+type InstructorCourse = Course & { status: string; quizzes?: QuizInput[] };
+type InstructorSection = "courses" | "create";
+
+function InstructorPage() {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return <div className="min-h-screen grid place-items-center text-muted-foreground">Loading...</div>;
+  }
+
+  if (!user) {
+    return <RoleAccessLogin role="instructor" />;
+  }
+
+  if (!["instructor", "admin"].includes(user.role)) {
+    return <RoleAccessLogin role="instructor" accessDenied />;
+  }
+
+  return <InstructorDashboard />;
+}
+
+function InstructorDashboard() {
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const [section, setSection] = useState<InstructorSection>("courses");
+  const [editingCourse, setEditingCourse] = useState<InstructorCourse | null>(null);
+
+  const { data } = useQuery({
+    queryKey: ["instructor-courses"],
+    queryFn: fetchInstructorCourses,
+  });
+
+  const courses = data?.courses ?? [];
+  const pendingCount = courses.filter((c) => c.status === "pending").length;
+
+  const handleLogout = () => {
+    logout();
+    navigate({ to: "/" });
+  };
+
+  const createMut = useMutation({
+    mutationFn: createInstructorCourse,
+    onSuccess: (res) => {
+      toast.success(res.message);
+      setSection("courses");
+      queryClient.invalidateQueries({ queryKey: ["instructor-courses"] });
+    },
+    onError: (e) => toast.error(e instanceof ApiError ? e.message : "Failed to submit course"),
+  });
+
+  const updateMut = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: ReturnType<typeof courseToFormValues> }) =>
+      updateInstructorCourse(id, data),
+    onSuccess: (res) => {
+      toast.success(res.message);
+      setEditingCourse(null);
+      setSection("courses");
+      queryClient.invalidateQueries({ queryKey: ["instructor-courses"] });
+    },
+    onError: (e) => toast.error(e instanceof ApiError ? e.message : "Failed to update course"),
+  });
+
+  const deleteMut = useMutation({
+    mutationFn: deleteInstructorCourse,
+    onSuccess: () => {
+      toast.success("Course deleted");
+      queryClient.invalidateQueries({ queryKey: ["instructor-courses"] });
+    },
+    onError: (e) => toast.error(e instanceof ApiError ? e.message : "Failed to delete course"),
+  });
+
+  const openCreate = () => {
+    setEditingCourse(null);
+    setSection("create");
+  };
+
+  const openEdit = (course: InstructorCourse) => {
+    setEditingCourse(course);
+    setSection("create");
+  };
+
+  const navItems = [
+    { id: "courses", label: "My Courses", icon: BookOpen, badge: courses.length || undefined },
+    { id: "create", label: editingCourse ? "Edit Course" : "Create Course", icon: editingCourse ? Pencil : Plus },
+  ];
+
+  return (
+    <DashboardLayout
+      panelTitle="Instructor Panel"
+      panelSubtitle="Manage your courses"
+      navItems={navItems}
+      activeId={section}
+      onNavigate={(id) => {
+        if (id === "create") openCreate();
+        else {
+          setEditingCourse(null);
+          setSection(id as InstructorSection);
+        }
+      }}
+      user={user}
+      onLogout={handleLogout}
+      headerActions={
+        section === "courses" ? (
+          <Button variant="hero" size="sm" onClick={openCreate}>
+            <Plus className="h-4 w-4" /> New Course
+          </Button>
+        ) : undefined
+      }
+    >
+      {section === "courses" && (
+        <DashboardSection
+          title="My Courses"
+          description="Create, view, and edit your courses with images, videos, and quizzes."
+        >
+          <div className="grid gap-4">
+            {courses.map((c) => (
+              <ContentCard key={c.id} className="flex flex-wrap items-center gap-4 !p-4 md:!p-5">
+                <div
+                  className="h-14 w-14 rounded-xl shrink-0 grid place-items-center text-white"
+                  style={{ background: c.thumbnail ?? "var(--gradient-hero)" }}
+                >
+                  <BookOpen className="h-6 w-6" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-bold">{c.title}</h3>
+                  <p className="text-sm text-muted-foreground">
+                    {c.category} · {c.isFree || c.price === 0 ? "Free" : `$${c.price}`} · {c.lessons} lessons
+                  </p>
+                </div>
+                <Badge variant={c.status === "published" ? "default" : c.status === "pending" ? "secondary" : "outline"}>
+                  {c.status}
+                </Badge>
+                <div className="flex flex-wrap gap-2">
+                  <Button size="sm" variant="hero" asChild>
+                    <Link to="/learn/$courseId" params={{ courseId: c.slug }}>
+                      <PlayCircle className="h-4 w-4" /> Open
+                    </Link>
+                  </Button>
+                  <Button size="sm" variant="outline" onClick={() => openEdit(c)}>
+                    <Pencil className="h-4 w-4" /> Edit
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="text-destructive hover:text-destructive"
+                    onClick={() => {
+                      if (window.confirm(`Delete "${c.title}"? This removes the course even if students are enrolled.`)) {
+                        deleteMut.mutate(c.id);
+                      }
+                    }}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              </ContentCard>
+            ))}
+            {courses.length === 0 && (
+              <ContentCard>
+                <div className="text-center py-8">
+                  <BookOpen className="h-12 w-12 mx-auto text-muted-foreground mb-3" />
+                  <p className="font-medium">No courses yet</p>
+                  <p className="text-sm text-muted-foreground mt-1">Create your first complete course to get started.</p>
+                  <Button variant="hero" className="mt-4" onClick={openCreate}>
+                    <Plus className="h-4 w-4" /> Create Course
+                  </Button>
+                </div>
+              </ContentCard>
+            )}
+          </div>
+
+          <ContentCard className="mt-6 flex items-start gap-3 text-sm text-muted-foreground !p-4">
+            <Clock className="h-5 w-5 shrink-0 mt-0.5 text-primary" />
+            <p>
+              Courses you submit appear as <strong>pending</strong> until an admin approves and publishes them.
+              {pendingCount > 0 && <> You have <strong>{pendingCount}</strong> awaiting approval.</>}
+            </p>
+          </ContentCard>
+        </DashboardSection>
+      )}
+
+      {section === "create" && (
+        <DashboardSection
+          title={editingCourse ? `Editing: ${editingCourse.title}` : "Create New Course"}
+          description="Add lessons, videos, images, quizzes, and set paid or free pricing."
+        >
+          <CourseForm
+            key={editingCourse?.id ?? "new"}
+            initialValues={editingCourse ? courseToFormValues(editingCourse) : undefined}
+            submitLabel={editingCourse ? "Save Changes" : "Submit for Approval"}
+            loading={editingCourse ? updateMut.isPending : createMut.isPending}
+            onCancel={() => {
+              setEditingCourse(null);
+              setSection("courses");
+            }}
+            onSubmit={(formData) => {
+              if (editingCourse) {
+                updateMut.mutate({ id: editingCourse.id, data: formData });
+              } else {
+                createMut.mutate(formData);
+              }
+            }}
+          />
+        </DashboardSection>
+      )}
+    </DashboardLayout>
+  );
+}
