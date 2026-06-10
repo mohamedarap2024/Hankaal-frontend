@@ -73,13 +73,13 @@ function LoginPage() {
           <p className="text-muted-foreground mt-2">Welcome back — sign in to learn and track your courses.</p>
 
           <form onSubmit={handleSubmit} className="mt-8 space-y-4">
-            <div className="space-y-2"><Label htmlFor="email">Email</Label><Input id="email" name="email" type="email" placeholder="you@email.com" required /></div>
+            <div className="space-y-2"><Label htmlFor="email">Email</Label><Input id="email" name="email" type="email" placeholder="Enter your email address" required autoComplete="username" /></div>
             <div className="space-y-2">
               <div className="flex items-center justify-between"><Label htmlFor="password">Password</Label>
                 <a href="#" className="text-xs text-primary hover:underline">Forgot password?</a>
               </div>
               <div className="relative">
-                <Input id="password" name="password" type={show ? "text" : "password"} placeholder="••••••••" required />
+                <Input id="password" name="password" type={show ? "text" : "password"} placeholder="Enter your password" required autoComplete="current-password" />
                 <button type="button" onClick={() => setShow(!show)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">
                   {show ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
@@ -90,11 +90,6 @@ function LoginPage() {
               {loading ? "Logging in..." : "Log in"}
             </Button>
           </form>
-
-          <div className="mt-6 p-4 rounded-xl bg-muted/50 text-xs text-muted-foreground space-y-1">
-            <p className="font-semibold text-foreground text-sm mb-2">Demo student account</p>
-            <p>student@hankaal.edu / password123</p>
-          </div>
 
           <p className="text-center text-sm text-muted-foreground mt-8">
             Don't have an account? <Link to="/register" className="text-primary font-semibold hover:underline">Sign up free</Link>

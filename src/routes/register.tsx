@@ -76,10 +76,10 @@ function RegisterPage() {
           <p className="text-muted-foreground mt-2">It's free and only takes a minute.</p>
 
           <form onSubmit={handleSubmit} className="mt-8 space-y-4">
-            <div className="space-y-2"><Label htmlFor="name">Full name</Label><Input id="name" name="name" required /></div>
-            <div className="space-y-2"><Label htmlFor="email">Email</Label><Input id="email" name="email" type="email" required /></div>
-            <div className="space-y-2"><Label htmlFor="password">Password</Label><Input id="password" name="password" type="password" minLength={6} required /></div>
-            <div className="space-y-2"><Label htmlFor="confirm">Confirm password</Label><Input id="confirm" name="confirm" type="password" required /></div>
+            <div className="space-y-2"><Label htmlFor="name">Full name</Label><Input id="name" name="name" placeholder="Enter your full name" required autoComplete="name" /></div>
+            <div className="space-y-2"><Label htmlFor="email">Email</Label><Input id="email" name="email" type="email" placeholder="Enter your email address" required autoComplete="email" /></div>
+            <div className="space-y-2"><Label htmlFor="password">Password</Label><Input id="password" name="password" type="password" minLength={6} placeholder="At least 6 characters" required autoComplete="new-password" /></div>
+            <div className="space-y-2"><Label htmlFor="confirm">Confirm password</Label><Input id="confirm" name="confirm" type="password" placeholder="Re-enter your password" required autoComplete="new-password" /></div>
             <label className="flex items-start gap-2 text-sm text-muted-foreground"><Checkbox className="mt-0.5" required /> I agree to the <a href="#" className="text-primary hover:underline">Terms</a> and <a href="#" className="text-primary hover:underline">Privacy Policy</a></label>
             <Button type="submit" variant="hero" size="lg" className="w-full" disabled={loading}>
               {loading ? "Creating account..." : "Create account"}

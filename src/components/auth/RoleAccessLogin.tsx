@@ -18,8 +18,6 @@ const config: Record<
     subtitle: string;
     icon: typeof Shield;
     allowedRoles: string[];
-    demoEmail: string;
-    demoPassword: string;
     studentLink: string;
   }
 > = {
@@ -28,8 +26,6 @@ const config: Record<
     subtitle: "Authorized administrators only. Manage users, courses, orders, and platform settings.",
     icon: Shield,
     allowedRoles: ["admin"],
-    demoEmail: "admin@hankaal.edu",
-    demoPassword: "admin123",
     studentLink: "/login",
   },
   instructor: {
@@ -37,8 +33,6 @@ const config: Record<
     subtitle: "Authorized instructors only. Create, edit, and manage your courses.",
     icon: GraduationCap,
     allowedRoles: ["instructor"],
-    demoEmail: "instructor@hankaal.edu",
-    demoPassword: "instructor123",
     studentLink: "/login",
   },
 };
@@ -122,7 +116,7 @@ export function RoleAccessLogin({ role, accessDenied }: RoleAccessLoginProps) {
           <form onSubmit={handleSubmit} className="mt-8 space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email">{role === "admin" ? "Admin Email" : "Instructor Email"}</Label>
-              <Input id="email" name="email" type="email" placeholder={cfg.demoEmail} required autoComplete="username" />
+              <Input id="email" name="email" type="email" placeholder="Enter your email address" required autoComplete="username" />
             </div>
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
@@ -131,7 +125,7 @@ export function RoleAccessLogin({ role, accessDenied }: RoleAccessLoginProps) {
                   id="password"
                   name="password"
                   type={show ? "text" : "password"}
-                  placeholder="••••••••"
+                  placeholder="Enter your password"
                   required
                   autoComplete="current-password"
                 />
@@ -148,11 +142,6 @@ export function RoleAccessLogin({ role, accessDenied }: RoleAccessLoginProps) {
               {loading ? "Signing in..." : role === "admin" ? "Sign in to Admin Panel" : "Sign in to Instructor Panel"}
             </Button>
           </form>
-
-          <div className="mt-6 p-4 rounded-xl bg-muted/50 text-xs text-muted-foreground">
-            <p className="font-semibold text-foreground text-sm mb-2">Demo {role} account</p>
-            <p>{cfg.demoEmail} / {cfg.demoPassword}</p>
-          </div>
 
           <div className="mt-8 flex flex-col gap-2 text-center text-sm text-muted-foreground">
             <Link to={cfg.studentLink} className="inline-flex items-center justify-center gap-1.5 text-primary font-semibold hover:underline">

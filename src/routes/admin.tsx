@@ -251,7 +251,7 @@ function AdminDashboard() {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="new-email">Email</Label>
-                  <Input id="new-email" name="email" type="email" required placeholder="user@hankaal.edu" />
+                  <Input id="new-email" name="email" type="email" required placeholder="Enter email address" />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="new-password">Password</Label>
