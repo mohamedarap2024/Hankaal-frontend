@@ -1,4 +1,5 @@
 import { createFileRoute, Link, redirect, useNavigate } from "@tanstack/react-router";
+import { SITE_CONTACT, ussdPaymentHint } from "@/lib/site-contact";
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -139,7 +140,7 @@ function DashboardPage() {
                 <div>
                   <strong>Paid courses</strong>
                   <p className="text-muted-foreground mt-1">
-                    Add to Cart → pay via USSD *712*614554731*amount# → message admin → start after approval.
+                    Add to Cart → pay via mobile {ussdPaymentHint("amount")} → WhatsApp {SITE_CONTACT.phone} → start after approval.
                   </p>
                 </div>
               </div>

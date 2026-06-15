@@ -22,7 +22,9 @@ export const Route = createFileRoute("/courses")({
   component: CoursesPage,
 });
 
-const categories = ["All", "Programming", "Design", "Business", "Data Science", "Marketing", "Languages"];
+import { COURSE_CATEGORIES } from "@/lib/site-contact";
+
+const categories = ["All", ...COURSE_CATEGORIES];
 
 function CoursesPage() {
   const [query, setQuery] = useState("");
@@ -48,7 +50,7 @@ function CoursesPage() {
         <div className="text-center max-w-2xl mx-auto">
           <div className="text-sm font-semibold text-accent uppercase tracking-widest mb-3">Explore</div>
           <h1 className="text-4xl md:text-5xl font-display font-extrabold">All Courses</h1>
-          <p className="mt-4 text-muted-foreground">Find your next skill. Filter by category, sort by what matters to you.</p>
+          <p className="mt-4 text-muted-foreground">Online English courses for Somali-speaking learners. Filter by category or search for your next class.</p>
         </div>
 
         <div className="mt-10 flex flex-col lg:flex-row gap-4 items-stretch lg:items-center">

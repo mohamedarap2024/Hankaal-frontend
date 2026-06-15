@@ -418,7 +418,7 @@ function AdminDashboard() {
                     queryClient.invalidateQueries({ queryKey: ["site-settings"] });
                   }}
                 >
-                  {["logo_url", "whatsapp_url", "payment_ussd_prefix", "payment_ussd_suffix", "site_name", "site_tagline"].map((key) => (
+                  {["logo_url", "whatsapp_url", "payment_ussd_prefix", "payment_ussd_suffix", "site_name", "site_tagline", "contact_email", "contact_phone", "facebook_url"].map((key) => (
                     <div key={key} className="space-y-1">
                       <Label>{key.replace(/_/g, " ")}</Label>
                       <Input name={key} defaultValue={settingsData?.settings?.[key] ?? ""} />

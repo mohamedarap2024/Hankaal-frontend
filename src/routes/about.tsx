@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
 import { stats as fallbackStats, team as fallbackTeam } from "@/lib/mock-data";
 import { fetchStats, fetchTeam } from "@/lib/api/content";
+import { SITE_CONTACT } from "@/lib/site-contact";
 
 export const Route = createFileRoute("/about")({
   head: () => ({
@@ -20,10 +21,10 @@ export const Route = createFileRoute("/about")({
 });
 
 const values = [
-  { icon: Target, title: "Mission", desc: "To make world-class education accessible to every learner, regardless of background or geography." },
-  { icon: Eye, title: "Vision", desc: "A future where every motivated person has the tools, skills, and community to thrive." },
-  { icon: Heart, title: "Values", desc: "Integrity, inclusivity, and an unwavering belief in our students' potential." },
-  { icon: Lightbulb, title: "Approach", desc: "Hands-on, project-based learning paired with mentorship from working professionals." },
+  { icon: Target, title: "Mission", desc: "To deliver practical online English education to Somali-speaking students everywhere, with patience and real progress." },
+  { icon: Eye, title: "Vision", desc: "A world where every motivated learner can speak, write, and succeed in English — from Mogadishu to the global diaspora." },
+  { icon: Heart, title: "Values", desc: "Practice, patience, and progress — the foundation of everything we teach at Hankaal College." },
+  { icon: Lightbulb, title: "Approach", desc: "Live-feel online classes, structured courses, and support via phone, WhatsApp, and email." },
 ];
 
 function AboutPage() {
@@ -50,7 +51,7 @@ function AboutPage() {
             Built by educators, <span className="bg-clip-text text-transparent" style={{ backgroundImage: "var(--gradient-hero)" }}>for learners.</span>
           </h1>
           <p className="mt-5 text-lg text-muted-foreground max-w-2xl mx-auto">
-            Hankaal College was founded on a simple idea: great education should be practical, patient, and progress-driven.
+            {SITE_CONTACT.description}
           </p>
         </motion.div>
       </section>
@@ -68,9 +69,9 @@ function AboutPage() {
           <div>
             <h2 className="text-3xl font-display font-bold">Our Story</h2>
             <div className="space-y-4 mt-5 text-muted-foreground leading-relaxed">
-              <p>Hankaal began in a single classroom with twelve students and one belief: that consistent practice, patient teaching, and clear progress could change lives.</p>
-              <p>A decade later, we serve over fifty thousand students across 120+ countries — but the philosophy hasn't budged. Every course we publish, every instructor we onboard, and every project we ship is held to that founding standard.</p>
-              <p>We're not the biggest. We're the ones who care most about your outcome.</p>
+              <p>Hankaal College offers online English classes to Somali-speaking students across the globe. We are based in Mogadishu and serve learners who want to speak, write, and use English with confidence.</p>
+              <p>Our courses are sold online — free and paid English programs you can access from anywhere. Whether you are preparing for work, study, or daily conversation, we meet you where you are.</p>
+              <p>Practice · Patience · Progress — that is our promise to every student.</p>
             </div>
           </div>
         </div>

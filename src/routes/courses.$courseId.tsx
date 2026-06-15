@@ -12,6 +12,7 @@ import { VideoPlayer } from "@/components/courses/VideoPlayer";
 import { QuizPanel } from "@/components/courses/QuizPanel";
 import { fetchCourse, fetchCourseQuizzes } from "@/lib/api/courses";
 import { fetchCoursePreview } from "@/lib/api/instructor";
+import { SITE_CONTACT, ussdPaymentHint } from "@/lib/site-contact";
 import { addToCart } from "@/lib/api/cart";
 import { checkEnrollment, enrollInCourse } from "@/lib/api/enrollments";
 import { normalizeCourse } from "@/lib/normalize-course";
@@ -218,7 +219,7 @@ function CourseDetails() {
                 {!canOpenLearn && !isFreeCourse && !isPreviewMode && (
                   <div className="text-xs text-muted-foreground space-y-1 p-3 rounded-lg bg-muted/50">
                     <p><strong>Paid course steps:</strong></p>
-                    <p>1. Add to Cart → 2. Pay *712*614554731*${course.price}# → 3. Message admin → 4. Start after approval</p>
+                    <p>1. Add to Cart → 2. Pay {ussdPaymentHint(course.price)} on your phone → 3. WhatsApp {SITE_CONTACT.phone} → 4. Start after approval</p>
                   </div>
                 )}
                 {!canOpenLearn && isFreeCourse && !isPreviewMode && (

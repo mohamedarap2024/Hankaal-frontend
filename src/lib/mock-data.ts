@@ -1,4 +1,5 @@
 import type { Course } from "./types";
+import { COURSE_CATEGORIES } from "./site-contact";
 
 export type { Course };
 
@@ -20,21 +21,21 @@ const instructors = [
   { name: "Omar Abdi", title: "Business Strategist", avatar: "https://i.pravatar.cc/150?img=33", bio: "MBA. Helped 200+ startups scale through smart growth strategies." },
 ];
 
-const categories = ["Programming", "Design", "Business", "Data Science", "Marketing", "Languages"];
+const categories = [...COURSE_CATEGORIES];
 
 const titles = [
-  "Complete Web Development Bootcamp",
-  "Mastering UI/UX Design Principles",
-  "Python for Data Science & ML",
-  "Digital Marketing Mastery 2026",
-  "Modern React & TypeScript",
-  "Financial Accounting Fundamentals",
-  "Graphic Design with Figma",
+  "Spoken English for Beginners",
   "Business English for Professionals",
-  "Mobile App Design Essentials",
-  "Cloud Computing with AWS",
-  "Data Visualization with D3.js",
-  "Entrepreneurship & Startup Strategy",
+  "IELTS Preparation — Reading & Writing",
+  "English Grammar Foundations",
+  "English Pronunciation & Accent",
+  "Conversational English — Daily Life",
+  "Academic English for Students",
+  "English for Job Interviews",
+  "TOEFL Preparation Course",
+  "English Writing Skills",
+  "Listening & Comprehension in English",
+  "Advanced English Fluency",
 ];
 
 export const courses: Course[] = titles.map((title, i) => {

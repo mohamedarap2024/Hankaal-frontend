@@ -34,7 +34,7 @@ export async function apiFetch<T>(path: string, options: RequestInit = {}): Prom
     res = await fetch(`${API_URL}${path}`, { ...options, headers });
   } catch {
     throw new ApiError(
-      `Cannot reach server at ${API_URL}. Check that the backend is running and CORS allows this site.`,
+      `Cannot reach server at ${API_URL}. Make sure the backend is running.`,
       0,
     );
   }

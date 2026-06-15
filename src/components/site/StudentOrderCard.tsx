@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { SITE_CONTACT, ussdPaymentHint } from "@/lib/site-contact";
 import { ChevronDown, CreditCard, MessageCircle } from "lucide-react";
 import { WhatsAppLink, WHATSAPP_URL } from "@/components/site/WhatsAppLink";
 import { Badge } from "@/components/ui/badge";
@@ -59,7 +60,7 @@ export function StudentOrderCard({ order }: StudentOrderCardProps) {
           <p className="text-sm font-medium">Step 1 — Pay on your phone</p>
           <p className="text-xs text-muted-foreground">Dial this USSD code for order #{ref}:</p>
           <p className="text-xl font-mono font-bold text-primary text-center py-2">{order.ussdCode}</p>
-          <p className="text-xs text-muted-foreground text-center">Format: *712*614554731*amount#</p>
+          <p className="text-xs text-muted-foreground text-center">Format: {ussdPaymentHint("amount")} · WhatsApp {SITE_CONTACT.phone}</p>
           <Button
             variant="hero"
             className="w-full"

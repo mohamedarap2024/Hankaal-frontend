@@ -1,5 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Mail, MapPin, Phone, Send } from "lucide-react";
+import { Mail, MapPin, Phone, Send, MessageCircle } from "lucide-react";
+import { SITE_CONTACT } from "@/lib/site-contact";
+import { WhatsAppLink } from "@/components/site/WhatsAppLink";
 import { useState } from "react";
 import { SiteShell } from "@/components/site/SiteShell";
 import { Input } from "@/components/ui/input";
@@ -52,15 +54,15 @@ function ContactPage() {
         <div className="text-center max-w-2xl mx-auto">
           <div className="text-sm font-semibold text-accent uppercase tracking-widest mb-3">Contact</div>
           <h1 className="text-4xl md:text-5xl font-display font-extrabold">We'd love to hear from you</h1>
-          <p className="mt-4 text-muted-foreground">Questions, feedback, partnership ideas — drop us a line and we'll get back within one business day.</p>
+          <p className="mt-4 text-muted-foreground">Questions about our online English classes? Contact us — we reply within one business day.</p>
         </div>
 
         <div className="grid lg:grid-cols-[1fr_1.4fr] gap-8 mt-12 max-w-5xl mx-auto">
           <div className="space-y-4">
             {[
-              { icon: Mail, title: "Email", value: "hello@hankaal.edu", desc: "Our team replies within 24 hours" },
-              { icon: Phone, title: "Phone", value: "+252 61 000 0000", desc: "Mon–Fri, 9am–6pm EAT" },
-              { icon: MapPin, title: "Office", value: "Hankaal Avenue", desc: "Mogadishu, Somalia" },
+              { icon: Mail, title: "Email", value: SITE_CONTACT.email, href: `mailto:${SITE_CONTACT.email}`, desc: "We reply within 24 hours" },
+              { icon: Phone, title: "Phone / WhatsApp", value: SITE_CONTACT.phone, href: `tel:${SITE_CONTACT.phone.replace(/\s/g, "")}`, desc: "Call or message anytime" },
+              { icon: MapPin, title: "Location", value: SITE_CONTACT.location, desc: "Online classes worldwide" },
             ].map((c) => (
               <div key={c.title} className="p-5 rounded-2xl bg-card border border-border flex gap-4">
                 <div className="h-11 w-11 rounded-xl grid place-items-center text-primary-foreground shrink-0" style={{ background: "var(--gradient-hero)" }}>
@@ -68,11 +70,27 @@ function ContactPage() {
                 </div>
                 <div>
                   <div className="font-semibold">{c.title}</div>
-                  <div className="text-sm font-medium text-foreground/90">{c.value}</div>
+                  {c.href ? (
+                    <a href={c.href} className="text-sm font-medium text-foreground/90 hover:text-primary">{c.value}</a>
+                  ) : (
+                    <div className="text-sm font-medium text-foreground/90">{c.value}</div>
+                  )}
                   <div className="text-xs text-muted-foreground mt-0.5">{c.desc}</div>
                 </div>
               </div>
             ))}
+            <div className="p-5 rounded-2xl bg-card border border-border flex flex-col gap-3">
+              <div className="flex items-center gap-2 font-semibold"><MessageCircle className="h-5 w-5 text-primary" /> Quick contact</div>
+              <WhatsAppLink href={SITE_CONTACT.whatsappUrl} label="Chat on WhatsApp" variant="button" className="w-full" />
+              <a
+                href={SITE_CONTACT.facebookUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm font-semibold text-primary hover:underline text-center"
+              >
+                Visit us on Facebook
+              </a>
+            </div>
           </div>
 
           <form onSubmit={handleSubmit} className="p-8 rounded-2xl bg-card border border-border space-y-5">

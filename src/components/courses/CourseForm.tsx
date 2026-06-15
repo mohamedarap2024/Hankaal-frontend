@@ -11,7 +11,9 @@ import type { CreateCoursePayload, CurriculumSection, QuizQuestion } from "@/lib
 import { ApiError } from "@/lib/api/client";
 import { toast } from "sonner";
 
-const CATEGORIES = ["Programming", "Design", "Business", "Data Science", "Marketing", "Languages"];
+import { SITE_CONTACT, COURSE_CATEGORIES } from "@/lib/site-contact";
+
+const CATEGORIES = [...COURSE_CATEGORIES];
 
 const emptySection = (): CurriculumSection => ({
   section: "New Section",
@@ -32,7 +34,7 @@ type CourseFormProps = {
 
 export function CourseForm({ onSubmit, loading, submitLabel = "Save Course", onCancel, initialValues }: CourseFormProps) {
   const [level, setLevel] = useState<"Beginner" | "Intermediate" | "Advanced">(initialValues?.level ?? "Beginner");
-  const [category, setCategory] = useState(initialValues?.category ?? "Programming");
+  const [category, setCategory] = useState(initialValues?.category ?? "Languages");
   const [objectives, setObjectives] = useState(initialValues?.objectives ?? ["Learn core concepts", "Build real projects", "Earn a certificate"]);
   const [curriculum, setCurriculum] = useState<CurriculumSection[]>(initialValues?.curriculum ?? [emptySection()]);
   const [isFree, setIsFree] = useState(initialValues?.isFree ?? false);

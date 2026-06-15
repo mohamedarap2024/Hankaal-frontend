@@ -17,27 +17,28 @@ import { fetchCourses } from "@/lib/api/courses";
 import { fetchFaqs, fetchStats, fetchTestimonials } from "@/lib/api/content";
 import { subscribeNewsletter } from "@/lib/api/contact";
 import { HERO_IMAGE } from "@/lib/images";
+import { SITE_CONTACT, ussdPaymentHint } from "@/lib/site-contact";
 import { ApiError } from "@/lib/api/client";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Hankaal College — Practice, Patience, Progress" },
-      { name: "description", content: "Learn from world-class instructors. Hundreds of online courses, certificates, and lifetime access at Hankaal College." },
-      { property: "og:title", content: "Hankaal College — Online Learning Platform" },
-      { property: "og:description", content: "Empowering the next generation through accessible, high-quality online education." },
+      { title: "Hankaal College — Learn English Online" },
+      { name: "description", content: "Online English classes for Somali-speaking students worldwide. Based in Mogadishu. Practice · Patience · Progress." },
+      { property: "og:title", content: "Hankaal College — Online English Classes" },
+      { property: "og:description", content: SITE_CONTACT.description },
     ],
   }),
   component: HomePage,
 });
 
 const features = [
-  { icon: GraduationCap, title: "Expert Instructors", desc: "Learn from industry veterans and academic leaders with decades of real-world experience." },
-  { icon: BookOpen, title: "350+ Online Courses", desc: "From programming and design to business and languages — find the right path for you." },
-  { icon: Award, title: "Verified Certificates", desc: "Earn shareable certificates that employers and universities recognize and respect." },
-  { icon: Clock, title: "Flexible Learning", desc: "Study at your own pace, on any device, anywhere — work and life-friendly schedules." },
-  { icon: InfinityIcon, title: "Lifetime Access", desc: "Enroll once and revisit your courses anytime, with all future updates included free." },
-  { icon: Headphones, title: "24/7 Student Support", desc: "Our dedicated success team and active community are always here to help you thrive." },
+  { icon: GraduationCap, title: "Expert English Teachers", desc: "Learn from qualified instructors who understand Somali speakers and global English standards." },
+  { icon: BookOpen, title: "English Language Courses", desc: "Speaking, grammar, business English, IELTS prep, and more — sold as online courses you can study anywhere." },
+  { icon: Award, title: "Certificates", desc: "Complete courses and earn certificates that show your English progress to employers and schools." },
+  { icon: Clock, title: "Flexible Online Classes", desc: "Study at your own pace, on any device — ideal for students in Somalia and across the diaspora." },
+  { icon: InfinityIcon, title: "Lifetime Access", desc: "Enroll once and revisit lessons anytime, with updates included." },
+  { icon: Headphones, title: "Student Support", desc: "Reach us on WhatsApp, phone, or email — we're here to help you succeed." },
 ];
 
 function HomePage() {
@@ -88,13 +89,13 @@ function HomePage() {
         <div className="container mx-auto px-4 py-16 lg:py-24 grid lg:grid-cols-2 gap-12 items-center">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
             <Badge variant="secondary" className="mb-5 gap-1.5 px-3 py-1.5">
-              <Sparkles className="h-3 w-3 text-accent" /> Trusted by 50,000+ students worldwide
+              <Sparkles className="h-3 w-3 text-accent" /> Online English classes · Mogadishu & worldwide
             </Badge>
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-display font-extrabold leading-[1.05] tracking-tight">
-              Unlock your future with <span className="bg-clip-text text-transparent" style={{ backgroundImage: "var(--gradient-hero)" }}>Hankaal College</span>
+              Learn <span className="bg-clip-text text-transparent" style={{ backgroundImage: "var(--gradient-hero)" }}>English</span> with Hankaal College
             </h1>
             <p className="mt-5 text-lg text-muted-foreground max-w-xl">
-              Practical, expert-led online courses in tech, design, business, and more. Learn at your pace, earn verified certificates, and grow your career.
+              {SITE_CONTACT.description} Browse our English courses, enroll free or pay online, and start learning today.
             </p>
             <div className="mt-7 flex flex-wrap gap-3">
               <Button variant="hero" size="xl" asChild>

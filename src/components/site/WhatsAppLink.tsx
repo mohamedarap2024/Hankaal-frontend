@@ -1,6 +1,8 @@
 import { cn } from "@/lib/utils";
 
-const DEFAULT_URL = "https://wa.me/252614554731";
+import { SITE_CONTACT } from "@/lib/site-contact";
+
+const DEFAULT_URL = SITE_CONTACT.whatsappUrl;
 
 function WhatsAppIcon({ className }: { className?: string }) {
   return (
