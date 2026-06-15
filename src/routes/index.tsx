@@ -14,11 +14,12 @@ import { CourseCard } from "@/components/site/CourseCard";
 import { useQuery } from "@tanstack/react-query";
 import { courses as fallbackCourses, faqs as fallbackFaqs, stats as fallbackStats, testimonials as fallbackTestimonials } from "@/lib/mock-data";
 import { fetchCourses } from "@/lib/api/courses";
-import { fetchFaqs, fetchStats, fetchTestimonials } from "@/lib/api/content";
+import { fetchFaqs, fetchStats, fetchSiteSettings, fetchTestimonials } from "@/lib/api/content";
 import { subscribeNewsletter } from "@/lib/api/contact";
 import { HERO_IMAGE } from "@/lib/images";
 import { SITE_CONTACT, ussdPaymentHint } from "@/lib/site-contact";
 import { ApiError } from "@/lib/api/client";
+import { WhatsAppIcon } from "@/components/site/WhatsAppLink";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -62,11 +63,18 @@ function HomePage() {
     queryFn: fetchFaqs,
     placeholderData: { faqs: fallbackFaqs },
   });
+  const { data: settingsData } = useQuery({
+    queryKey: ["site-settings"],
+    queryFn: fetchSiteSettings,
+    staleTime: 60_000,
+  });
 
   const popular = (coursesData?.courses ?? fallbackCourses).slice(0, 6);
   const stats = statsData?.stats ?? fallbackStats;
   const testimonials = testimonialsData?.testimonials ?? fallbackTestimonials;
   const faqs = faqsData?.faqs ?? fallbackFaqs;
+  const heroImage = settingsData?.settings?.hero_image_url?.trim() || HERO_IMAGE;
+  const whatsappUrl = settingsData?.settings?.whatsapp_url?.trim() || SITE_CONTACT.whatsappUrl;
 
   const handleNewsletter = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -119,7 +127,18 @@ function HomePage() {
           </motion.div>
           <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.7, delay: 0.1 }} className="relative">
             <div className="absolute -inset-4 rounded-3xl blur-2xl opacity-30" style={{ background: "var(--gradient-hero)" }} />
-            <img src={HERO_IMAGE} alt="Students learning together" width={1280} height={960} className="relative rounded-2xl shadow-[var(--shadow-elegant)] w-full object-cover" />
+            <div className="relative rounded-2xl overflow-hidden shadow-[var(--shadow-elegant)]">
+              <img src={heroImage} alt="Students learning English at Hankaal College" width={1280} height={960} className="w-full object-cover" />
+              <a
+                href={whatsappUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Chat with us on WhatsApp"
+                className="absolute top-4 right-4 z-10 flex h-14 w-14 items-center justify-center rounded-full bg-[#25D366] text-white shadow-lg ring-4 ring-white/90 transition-transform hover:scale-110"
+              >
+                <WhatsAppIcon className="h-7 w-7" />
+              </a>
+            </div>
             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }} className="absolute -bottom-6 -left-6 bg-card border border-border rounded-xl px-4 py-3 shadow-lg flex items-center gap-3">
               <div className="h-10 w-10 rounded-full grid place-items-center" style={{ background: "var(--gradient-accent)" }}>
                 <Award className="h-5 w-5 text-white" />

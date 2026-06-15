@@ -418,10 +418,27 @@ function AdminDashboard() {
                     queryClient.invalidateQueries({ queryKey: ["site-settings"] });
                   }}
                 >
-                  {["logo_url", "whatsapp_url", "payment_ussd_prefix", "payment_ussd_suffix", "site_name", "site_tagline", "contact_email", "contact_phone", "facebook_url"].map((key) => (
-                    <div key={key} className="space-y-1">
+                  {["logo_url", "hero_image_url", "whatsapp_url", "payment_ussd_prefix", "payment_ussd_suffix", "site_name", "site_tagline", "contact_email", "contact_phone", "facebook_url"].map((key) => (
+                    <div key={key} className={key === "hero_image_url" ? "sm:col-span-2 space-y-1" : "space-y-1"}>
                       <Label>{key.replace(/_/g, " ")}</Label>
-                      <Input name={key} defaultValue={settingsData?.settings?.[key] ?? ""} />
+                      <Input
+                        name={key}
+                        defaultValue={settingsData?.settings?.[key] ?? ""}
+                        placeholder={
+                          key === "hero_image_url"
+                            ? "Paste image link (URL) for homepage hero"
+                            : key === "logo_url"
+                              ? "/hankaal-logo.png or full image URL"
+                              : undefined
+                        }
+                      />
+                      {key === "hero_image_url" && settingsData?.settings?.hero_image_url && (
+                        <img
+                          src={settingsData.settings.hero_image_url}
+                          alt="Hero preview"
+                          className="mt-2 h-24 w-full max-w-xs rounded-lg object-cover border border-border"
+                        />
+                      )}
                     </div>
                   ))}
                   <div className="sm:col-span-2"><Button type="submit" variant="hero">Save Settings</Button></div>
