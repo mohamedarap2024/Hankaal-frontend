@@ -10,6 +10,7 @@ lerna-debug.log*
 node_modules
 .env
 .env.local
+vercel.env
 hankaal-learn-hub/
 
 dist
