@@ -62,6 +62,21 @@ function CourseLearnPage() {
   const [tab, setTab] = useState("lessons");
 
   const isStaff = !!user && ["admin", "instructor"].includes(user.role);
+  const previewCourse = loaderData.course ? normalizeCourse(loaderData.course) : null;
+
+  const { data: enrollmentData, isLoading: enrollLoading } = useQuery({
+    queryKey: ["enrollment-check", previewCourse?.id],
+    queryFn: () => checkEnrollment(previewCourse!.id),
+    enabled: !!previewCourse && !authLoading && !isStaff,
+  });
+
+  const isEnrolled = enrollmentData?.enrolled ?? false;
+
+  const { data: fullCourseData, isLoading: fullCourseLoading } = useQuery({
+    queryKey: ["learn-full", loaderData.slug],
+    queryFn: () => fetchCourse(loaderData.slug),
+    enabled: !authLoading && isEnrolled && !isStaff,
+  });
 
   const { data: staffMeta, isLoading: staffLoading } = useQuery({
     queryKey: ["learn-staff", loaderData.slug],
@@ -70,19 +85,13 @@ function CourseLearnPage() {
     retry: false,
   });
 
-  const rawCourse = loaderData.course ?? staffMeta?.course ?? null;
+  const rawCourse = staffMeta?.course ?? fullCourseData?.course ?? previewCourse ?? null;
   const course = rawCourse ? normalizeCourse(rawCourse) : null;
-
-  const { data: enrollmentData, isLoading: enrollLoading } = useQuery({
-    queryKey: ["enrollment-check", course?.id],
-    queryFn: () => checkEnrollment(course!.id),
-    enabled: !!course && !authLoading && !isStaff,
-  });
 
   const { data: publicQuizzes } = useQuery({
     queryKey: ["learn-quizzes", loaderData.slug],
     queryFn: () => fetchCourseQuizzes(loaderData.slug),
-    enabled: !!course && !loaderData.isPreview,
+    enabled: !!course && !loaderData.isPreview && (isEnrolled || isStaff),
     retry: false,
   });
 
@@ -95,7 +104,12 @@ function CourseLearnPage() {
   const instructorId = staffMeta?.instructorId;
   const isOwner = user?.role === "instructor" && instructorId === user.id;
 
-  if (authLoading || (isStaff && !course && staffLoading) || (!isStaff && !!course && enrollLoading)) {
+  if (
+    authLoading ||
+    (isStaff && !course && staffLoading) ||
+    (!isStaff && !!previewCourse && enrollLoading) ||
+    (!isStaff && isEnrolled && fullCourseLoading)
+  ) {
     return <SiteShell><div className="container py-20 text-center text-muted-foreground">Loading course...</div></SiteShell>;
   }
 
@@ -123,7 +137,6 @@ function CourseLearnPage() {
     ? [{ id: `active-quiz`, title: `${activeLesson.title} Quiz`, questions: activeLesson.quiz.questions }]
     : [];
 
-  const isEnrolled = enrollmentData?.enrolled ?? false;
   const canAccess = isEnrolled || isAdmin || isOwner;
 
   if (!canAccess) {

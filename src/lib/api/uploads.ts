@@ -1,6 +1,5 @@
 import { ApiError } from "./client";
-
-const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3001";
+import { API_URL, apiHeaders } from "./config";
 
 function getToken(): string | null {
   if (typeof window === "undefined") return null;
@@ -12,7 +11,7 @@ export async function uploadFile(file: File, type: "image" | "video") {
   formData.append("file", file);
 
   const token = getToken();
-  const headers: Record<string, string> = {};
+  const headers: Record<string, string> = apiHeaders();
   if (token) headers.Authorization = `Bearer ${token}`;
 
   let res: Response;

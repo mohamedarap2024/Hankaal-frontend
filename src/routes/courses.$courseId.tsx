@@ -86,7 +86,29 @@ function CourseDetails() {
 
   const rawCourse = loaderData.course ?? staffData?.course ?? null;
   const course = rawCourse ? normalizeCourse(rawCourse) : null;
-  const rawQuizzes = loaderData.quizzes.length > 0 ? loaderData.quizzes : (staffData?.quizzes ?? []);
+  const { data: enrollmentData, isLoading: enrollLoading } = useQuery({
+    queryKey: ["enrollment-check", course?.id],
+    queryFn: () => checkEnrollment(course!.id),
+    enabled: !!user && !!course && !authLoading && !isStaff,
+  });
+
+  const isEnrolled = enrollmentData?.enrolled ?? false;
+  const isAdmin = user?.role === "admin";
+  const instructorId = staffData?.instructorId;
+  const isOwner = user?.role === "instructor" && instructorId === user.id;
+  const canOpenLearn = isEnrolled || isAdmin || isOwner;
+
+  const { data: enrolledQuizzesData } = useQuery({
+    queryKey: ["course-quizzes", loaderData.slug],
+    queryFn: () => fetchCourseQuizzes(loaderData.slug),
+    enabled: !!user && !authLoading && canOpenLearn,
+    retry: false,
+  });
+
+  const rawQuizzes =
+    loaderData.quizzes.length > 0
+      ? loaderData.quizzes
+      : (staffData?.quizzes ?? enrolledQuizzesData?.quizzes ?? []);
   const quizzes: Quiz[] = rawQuizzes.map((q, i) => ({
     id: q.id ?? `quiz-${i}`,
     title: q.title,
@@ -94,12 +116,6 @@ function CourseDetails() {
   }));
   const related = loaderData.related;
   const courseStatus = staffData?.status;
-
-  const { data: enrollmentData, isLoading: enrollLoading } = useQuery({
-    queryKey: ["enrollment-check", course?.id],
-    queryFn: () => checkEnrollment(course!.id),
-    enabled: !!user && !!course && !authLoading && !isStaff,
-  });
 
   const isPageLoading =
     authLoading ||
@@ -115,11 +131,6 @@ function CourseDetails() {
     return <SiteShell><div className="container py-20 text-center"><h1 className="text-3xl font-bold">Course not found</h1></div></SiteShell>;
   }
 
-  const instructorId = staffData?.instructorId;
-  const isEnrolled = enrollmentData?.enrolled ?? false;
-  const isAdmin = user?.role === "admin";
-  const isOwner = user?.role === "instructor" && instructorId === user.id;
-  const canOpenLearn = isEnrolled || isAdmin || isOwner;
   const isPreviewMode = needsPreview || (!!courseStatus && courseStatus !== "published");
 
   const coverImage = resolveMediaUrl(course.imageUrl);

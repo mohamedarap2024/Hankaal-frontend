@@ -1,4 +1,4 @@
-const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3001";
+import { API_URL, apiHeaders } from "./config";
 
 export class ApiError extends Error {
   constructor(
@@ -25,7 +25,7 @@ export async function apiFetch<T>(path: string, options: RequestInit = {}): Prom
   const token = getToken();
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
-    ...(options.headers as Record<string, string>),
+    ...apiHeaders(options.headers as Record<string, string>),
   };
   if (token) headers.Authorization = `Bearer ${token}`;
 
