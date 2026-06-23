@@ -6,19 +6,35 @@ type VideoPlayerProps = {
   title?: string;
   thumbnail?: string;
   className?: string;
+  /** Start playing automatically. Browsers require muted playback for autoplay to work. */
+  autoPlay?: boolean;
+  /** Loop the video when it ends. */
+  loop?: boolean;
 };
 
-export function VideoPlayer({ url, title, thumbnail, className = "aspect-video" }: VideoPlayerProps) {
+export function VideoPlayer({ url, title, thumbnail, className = "aspect-video", autoPlay = false, loop = false }: VideoPlayerProps) {
   const embed = getYouTubeEmbedUrl(url);
   const direct = getPlayableVideoUrl(url);
   const image = resolveMediaUrl(url);
 
   if (embed) {
+    const params = new URLSearchParams();
+    if (autoPlay) {
+      params.set("autoplay", "1");
+      params.set("mute", "1"); // required for autoplay in modern browsers
+    }
+    if (loop) {
+      params.set("loop", "1");
+      const id = embed.split("/embed/")[1];
+      if (id) params.set("playlist", id); // YouTube loop needs the video id as playlist
+    }
+    const query = params.toString();
     return (
       <iframe
-        src={embed}
+        src={query ? `${embed}?${query}` : embed}
         title={title ?? "Video"}
         className={`w-full h-full ${className}`}
+        allow="autoplay; encrypted-media; fullscreen"
         allowFullScreen
       />
     );
@@ -26,7 +42,15 @@ export function VideoPlayer({ url, title, thumbnail, className = "aspect-video" 
 
   if (direct) {
     return (
-      <video src={direct} controls className={`w-full h-full bg-black ${className}`}>
+      <video
+        src={direct}
+        controls
+        autoPlay={autoPlay}
+        muted={autoPlay} // muted is required for autoplay to be allowed
+        loop={loop}
+        playsInline
+        className={`w-full h-full bg-black ${className}`}
+      >
         Your browser does not support video playback.
       </video>
     );

@@ -66,7 +66,7 @@ function AboutPage() {
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           <div className="rounded-3xl aspect-[4/3] overflow-hidden bg-black" style={aboutVideoUrl ? undefined : { background: "var(--gradient-hero)" }}>
             {aboutVideoUrl ? (
-              <VideoPlayer url={aboutVideoUrl} title="About Hankaal College" className="aspect-[4/3]" />
+              <VideoPlayer url={aboutVideoUrl} title="About Hankaal College" className="aspect-[4/3]" autoPlay loop />
             ) : (
               <div className="h-full w-full grid place-items-center text-white/90 text-center p-12">
                 <div>
