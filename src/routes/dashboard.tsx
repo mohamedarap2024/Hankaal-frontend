@@ -13,6 +13,7 @@ import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
 import { fetchEnrollments, fetchEnrollmentStats } from "@/lib/api/enrollments";
+import { CertificateButton } from "@/components/courses/CertificateButton";
 
 export const Route = createFileRoute("/dashboard")({
   beforeLoad: () => {
@@ -232,11 +233,22 @@ function DashboardPage() {
                       <span className="text-sm font-medium text-muted-foreground w-12">{e.progress}%</span>
                     </div>
                   </div>
-                  <Button variant="hero" className="shrink-0 self-center" asChild>
-                    <Link to="/learn/$courseId" params={{ courseId: e.course.slug }}>
-                      <PlayCircle className="h-4 w-4" /> Continue
-                    </Link>
-                  </Button>
+                  <div className="flex flex-col gap-2 shrink-0 self-center">
+                    <Button variant="hero" asChild>
+                      <Link to="/learn/$courseId" params={{ courseId: e.course.slug }}>
+                        <PlayCircle className="h-4 w-4" /> Continue
+                      </Link>
+                    </Button>
+                    {e.progress >= 100 && user && (
+                      <CertificateButton
+                        studentName={user.name}
+                        courseTitle={e.course.title}
+                        instructorName={e.course.instructor.name}
+                        enrollmentId={e.id}
+                        label="Certificate"
+                      />
+                    )}
+                  </div>
                 </ContentCard>
               ))}
             </div>

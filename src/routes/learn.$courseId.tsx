@@ -1,13 +1,14 @@
 import { createFileRoute, Link, redirect, notFound } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, CheckCircle2, PlayCircle, BookOpen, HelpCircle, Video } from "lucide-react";
+import { ArrowLeft, CheckCircle2, PlayCircle, BookOpen, HelpCircle, Video, Award } from "lucide-react";
 import { SiteShell } from "@/components/site/SiteShell";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { VideoPlayer } from "@/components/courses/VideoPlayer";
 import { QuizPanel } from "@/components/courses/QuizPanel";
+import { CertificateButton } from "@/components/courses/CertificateButton";
 import { fetchCourse, fetchCourseQuizzes } from "@/lib/api/courses";
 import { fetchCoursePreview } from "@/lib/api/instructor";
 import { checkEnrollment, updateProgress } from "@/lib/api/enrollments";
@@ -192,6 +193,28 @@ function CourseLearnPage() {
           <h1 className="text-2xl md:text-3xl font-display font-bold">{course.title}</h1>
           <p className="text-muted-foreground mt-1">Watch lessons, complete the course, and take quizzes below.</p>
         </div>
+
+        {isEnrolled && progress >= 100 && user && enrollmentData?.enrollmentId && (
+          <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-2xl border border-accent/40 bg-accent/10 p-5">
+            <div className="flex items-center gap-3">
+              <Award className="h-8 w-8 text-accent shrink-0" />
+              <div>
+                <h2 className="font-display font-bold text-lg">Course completed!</h2>
+                <p className="text-sm text-muted-foreground">
+                  Download your certificate of completion for {course.title}.
+                </p>
+              </div>
+            </div>
+            <CertificateButton
+              studentName={user.name}
+              courseTitle={course.title}
+              instructorName={course.instructor.name}
+              enrollmentId={enrollmentData.enrollmentId}
+              label="Download Certificate"
+              className="shrink-0"
+            />
+          </div>
+        )}
 
         <Tabs value={tab} onValueChange={setTab} className="space-y-6">
           <TabsList className="grid w-full max-w-md grid-cols-2">
