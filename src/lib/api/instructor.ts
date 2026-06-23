@@ -21,13 +21,24 @@ export type CreateCoursePayload = {
   videoUrl?: string;
   thumbnail?: string;
   badge?: string;
+  instructorName?: string;
+  instructorPercentage?: number;
   objectives: string[];
   curriculum: CurriculumSection[];
   quizzes?: QuizInput[];
 };
 
+export type InstructorCourseStats = {
+  enrollments: number;
+  sales: number;
+  revenue: number;
+  instructorEarnings: number;
+};
+
 export async function fetchInstructorCourses() {
-  return apiFetch<{ courses: (Course & { status: string; quizzes?: QuizInput[] })[] }>("/api/instructor/courses");
+  return apiFetch<{ courses: (Course & { status: string; quizzes?: QuizInput[] } & Partial<InstructorCourseStats>)[] }>(
+    "/api/instructor/courses",
+  );
 }
 
 export async function fetchCoursePreview(slug: string) {
@@ -87,6 +98,8 @@ export function courseToFormValues(course: Course & { quizzes?: QuizInput[] }): 
     videoUrl: course.videoUrl,
     thumbnail: course.thumbnail,
     badge: course.badge,
+    instructorName: course.instructor?.name,
+    instructorPercentage: course.instructorPercentage,
     objectives: course.objectives,
     curriculum: course.curriculum.map((s) => ({
       section: s.section,

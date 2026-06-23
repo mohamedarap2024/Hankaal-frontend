@@ -77,6 +77,8 @@ export function CourseForm({ onSubmit, loading, submitLabel = "Save Course", onC
       videoUrl: videoUrl || undefined,
       thumbnail: thumbnail || imageUrl || undefined,
       badge: (form.get("badge") as string) || undefined,
+      instructorName: (form.get("instructorName") as string)?.trim() || undefined,
+      instructorPercentage: isFree ? undefined : Number(form.get("instructorPercentage")) || undefined,
       objectives: objectives.filter((o) => o.trim()),
       curriculum: curriculum
         .filter((s) => s.section.trim() && s.lessons.length > 0)
@@ -108,6 +110,14 @@ export function CourseForm({ onSubmit, loading, submitLabel = "Save Course", onC
           <div className="sm:col-span-2 space-y-2">
             <Label>Full Description *</Label>
             <Textarea name="longDescription" rows={4} defaultValue={initialValues?.longDescription} placeholder="Detailed course overview" required />
+          </div>
+          <div className="sm:col-span-2 space-y-2">
+            <Label>Instructor Name (recorded by)</Label>
+            <Input
+              name="instructorName"
+              defaultValue={initialValues?.instructorName}
+              placeholder="Name shown on the course — e.g. the person who recorded it"
+            />
           </div>
           <div className="space-y-2">
             <Label>Category *</Label>
@@ -148,6 +158,21 @@ export function CourseForm({ onSubmit, loading, submitLabel = "Save Course", onC
               <div className="space-y-2">
                 <Label>Original Price ($)</Label>
                 <Input name="originalPrice" type="number" min={0} defaultValue={initialValues?.originalPrice} placeholder="e.g. 99" />
+              </div>
+              <div className="sm:col-span-2 space-y-2">
+                <Label>Your Revenue Share (%)</Label>
+                <Input
+                  name="instructorPercentage"
+                  type="number"
+                  min={0}
+                  max={100}
+                  step={1}
+                  defaultValue={initialValues?.instructorPercentage ?? 0}
+                  placeholder="e.g. 20 — your percentage of each sale"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Your earnings = price × this percentage for every approved sale.
+                </p>
               </div>
             </>
           )}

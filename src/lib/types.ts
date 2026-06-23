@@ -19,6 +19,7 @@ export type Course = {
   imageUrl?: string;
   videoUrl?: string;
   badge?: string;
+  instructorPercentage?: number;
   objectives: string[];
   curriculum: {
     section: string;

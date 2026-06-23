@@ -1,8 +1,8 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { RoleAccessLogin } from "@/components/auth/RoleAccessLogin";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
-import { BookOpen, Plus, Clock, Pencil, PlayCircle, Trash2 } from "lucide-react";
+import { useState, useEffect } from "react";
+import { BookOpen, Plus, Clock, Pencil, PlayCircle, Trash2, Users, ShoppingCart, DollarSign } from "lucide-react";
 import { DashboardLayout, DashboardSection, ContentCard } from "@/components/dashboard/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -29,6 +29,12 @@ type InstructorSection = "courses" | "create";
 
 function InstructorPage() {
   const { user, loading } = useAuth();
+  const navigate = useNavigate();
+
+  // Admins have their own panel — keep the instructor area for instructors only.
+  useEffect(() => {
+    if (!loading && user?.role === "admin") navigate({ to: "/admin" });
+  }, [user, loading, navigate]);
 
   if (loading) {
     return <div className="min-h-screen grid place-items-center text-muted-foreground">Loading...</div>;
@@ -38,7 +44,7 @@ function InstructorPage() {
     return <RoleAccessLogin role="instructor" />;
   }
 
-  if (!["instructor", "admin"].includes(user.role)) {
+  if (user.role !== "instructor") {
     return <RoleAccessLogin role="instructor" accessDenied />;
   }
 
@@ -153,6 +159,22 @@ function InstructorDashboard() {
                   <p className="text-sm text-muted-foreground">
                     {c.category} · {c.isFree || c.price === 0 ? "Free" : `$${c.price}`} · {c.lessons} lessons
                   </p>
+                  <div className="flex flex-wrap gap-x-4 gap-y-1 mt-2 text-xs text-muted-foreground">
+                    <span className="inline-flex items-center gap-1">
+                      <Users className="h-3.5 w-3.5" /> {c.enrollments ?? 0} enrolled
+                    </span>
+                    {!c.isFree && c.price > 0 && (
+                      <>
+                        <span className="inline-flex items-center gap-1">
+                          <ShoppingCart className="h-3.5 w-3.5" /> {c.sales ?? 0} sold
+                        </span>
+                        <span className="inline-flex items-center gap-1 font-medium text-foreground">
+                          <DollarSign className="h-3.5 w-3.5" /> ${c.instructorEarnings ?? 0} earned
+                          {c.instructorPercentage ? ` (${c.instructorPercentage}%)` : ""}
+                        </span>
+                      </>
+                    )}
+                  </div>
                 </div>
                 <Badge variant={c.status === "published" ? "default" : c.status === "pending" ? "secondary" : "outline"}>
                   {c.status}

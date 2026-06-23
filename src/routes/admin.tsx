@@ -418,8 +418,8 @@ function AdminDashboard() {
                     queryClient.invalidateQueries({ queryKey: ["site-settings"] });
                   }}
                 >
-                  {["logo_url", "hero_image_url", "whatsapp_url", "payment_ussd_prefix", "payment_ussd_suffix", "site_name", "site_tagline", "contact_email", "contact_phone", "facebook_url"].map((key) => (
-                    <div key={key} className={key === "hero_image_url" ? "sm:col-span-2 space-y-1" : "space-y-1"}>
+                  {["logo_url", "hero_image_url", "about_video_url", "whatsapp_url", "payment_ussd_prefix", "payment_ussd_suffix", "site_name", "site_tagline", "contact_email", "contact_phone", "facebook_url"].map((key) => (
+                    <div key={key} className={key === "hero_image_url" || key === "about_video_url" ? "sm:col-span-2 space-y-1" : "space-y-1"}>
                       <Label>{key.replace(/_/g, " ")}</Label>
                       <Input
                         name={key}
@@ -427,9 +427,11 @@ function AdminDashboard() {
                         placeholder={
                           key === "hero_image_url"
                             ? "Paste image link (URL) for homepage hero"
-                            : key === "logo_url"
-                              ? "/hankaal-logo.png or full image URL"
-                              : undefined
+                            : key === "about_video_url"
+                              ? "Paste video link (YouTube or .mp4) for the About page"
+                              : key === "logo_url"
+                                ? "/hankaal-logo.png or full image URL"
+                                : undefined
                         }
                       />
                       {key === "hero_image_url" && settingsData?.settings?.hero_image_url && (
