@@ -1,4 +1,4 @@
-import { API_URL, apiHeaders } from "./config";
+import { apiBase, apiHeaders } from "./config";
 
 export class ApiError extends Error {
   constructor(
@@ -29,12 +29,13 @@ export async function apiFetch<T>(path: string, options: RequestInit = {}): Prom
   };
   if (token) headers.Authorization = `Bearer ${token}`;
 
+  const base = apiBase();
   let res: Response;
   try {
-    res = await fetch(`${API_URL}${path}`, { ...options, headers });
+    res = await fetch(`${base}${path}`, { ...options, headers });
   } catch {
     throw new ApiError(
-      `Cannot reach server at ${API_URL}. Make sure the backend is running.`,
+      `Cannot reach server at ${base || "the API"}. Make sure the backend is running.`,
       0,
     );
   }

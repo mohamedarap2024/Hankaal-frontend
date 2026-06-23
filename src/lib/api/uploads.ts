@@ -1,5 +1,5 @@
 import { ApiError } from "./client";
-import { API_URL, apiHeaders } from "./config";
+import { apiBase, apiHeaders } from "./config";
 
 function getToken(): string | null {
   if (typeof window === "undefined") return null;
@@ -14,11 +14,12 @@ export async function uploadFile(file: File, type: "image" | "video") {
   const headers: Record<string, string> = apiHeaders();
   if (token) headers.Authorization = `Bearer ${token}`;
 
+  const base = apiBase();
   let res: Response;
   try {
-    res = await fetch(`${API_URL}/api/uploads/${type}`, { method: "POST", headers, body: formData });
+    res = await fetch(`${base}/api/uploads/${type}`, { method: "POST", headers, body: formData });
   } catch {
-    throw new ApiError(`Cannot reach server at ${API_URL}`, 0);
+    throw new ApiError(`Cannot reach server at ${base || "the API"}`, 0);
   }
 
   const data = await res.json().catch(() => ({}));
