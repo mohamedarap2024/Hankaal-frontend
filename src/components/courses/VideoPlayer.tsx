@@ -1,5 +1,5 @@
 import { PlayCircle } from "lucide-react";
-import { getPlayableVideoUrl, getYouTubeEmbedUrl, isGradient, resolveMediaUrl } from "@/lib/media";
+import { getPlayableVideoUrl, getVimeoEmbedUrl, getYouTubeEmbedUrl, isGradient, resolveMediaUrl } from "@/lib/media";
 
 type VideoPlayerProps = {
   url?: string;
@@ -14,6 +14,7 @@ type VideoPlayerProps = {
 
 export function VideoPlayer({ url, title, thumbnail, className = "aspect-video", autoPlay = false, loop = false }: VideoPlayerProps) {
   const embed = getYouTubeEmbedUrl(url);
+  const vimeo = getVimeoEmbedUrl(url);
   const direct = getPlayableVideoUrl(url);
   const image = resolveMediaUrl(url);
 
@@ -35,6 +36,26 @@ export function VideoPlayer({ url, title, thumbnail, className = "aspect-video",
         title={title ?? "Video"}
         className={`w-full h-full ${className}`}
         allow="autoplay; encrypted-media; fullscreen"
+        allowFullScreen
+      />
+    );
+  }
+
+  if (vimeo) {
+    const sep = vimeo.includes("?") ? "&" : "?";
+    const params = new URLSearchParams();
+    if (autoPlay) {
+      params.set("autoplay", "1");
+      params.set("muted", "1"); // Vimeo uses "muted" — required for autoplay
+    }
+    if (loop) params.set("loop", "1");
+    const query = params.toString();
+    return (
+      <iframe
+        src={query ? `${vimeo}${sep}${query}` : vimeo}
+        title={title ?? "Video"}
+        className={`w-full h-full ${className}`}
+        allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
         allowFullScreen
       />
     );

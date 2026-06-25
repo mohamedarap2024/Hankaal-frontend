@@ -25,6 +25,22 @@ export function getYouTubeEmbedUrl(url?: string): string | null {
   return null;
 }
 
+export function getVimeoEmbedUrl(url?: string): string | null {
+  if (!url) return null;
+  const resolved = resolveMediaUrl(url) ?? url;
+  if (resolved.includes("player.vimeo.com/video/")) {
+    return resolved.split("?")[0];
+  }
+  // https://vimeo.com/123456789  or  https://vimeo.com/123456789/abcdef (private hash)
+  const match = resolved.match(/vimeo\.com\/(?:channels\/[\w]+\/|groups\/[\w]+\/videos\/|video\/)?(\d+)(?:\/(\w+))?/i);
+  if (match?.[1]) {
+    const id = match[1];
+    const hash = match[2];
+    return `https://player.vimeo.com/video/${id}${hash ? `?h=${hash}` : ""}`;
+  }
+  return null;
+}
+
 export function isDirectVideo(url?: string): boolean {
   if (!url) return false;
   const resolved = resolveMediaUrl(url) ?? url;
@@ -34,6 +50,6 @@ export function isDirectVideo(url?: string): boolean {
 
 export function getPlayableVideoUrl(url?: string): string | null {
   if (!url) return null;
-  if (getYouTubeEmbedUrl(url)) return null;
+  if (getYouTubeEmbedUrl(url) || getVimeoEmbedUrl(url)) return null;
   return resolveMediaUrl(url) ?? null;
 }

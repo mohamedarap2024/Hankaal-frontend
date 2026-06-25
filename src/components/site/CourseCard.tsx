@@ -2,14 +2,14 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import { Star, Users, Clock, ShoppingCart, PlayCircle, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useState } from "react";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import type { Course } from "@/lib/types";
 import { isGradient, resolveMediaUrl } from "@/lib/media";
 import { useAuth } from "@/contexts/AuthContext";
 import { addToCart } from "@/lib/api/cart";
-import { enrollInCourse } from "@/lib/api/enrollments";
+import { enrollInCourse, fetchEnrollments } from "@/lib/api/enrollments";
 import { ApiError } from "@/lib/api/client";
 import { toast } from "sonner";
 
@@ -23,6 +23,15 @@ export function CourseCard({ course, index = 0 }: { course: Course; index?: numb
   const [acting, setActing] = useState(false);
 
   const isStudent = !user || user.role === "student";
+
+  // Already-enrolled students go straight to the lesson player when they click the card.
+  const { data: enrollmentsData } = useQuery({
+    queryKey: ["enrollments"],
+    queryFn: fetchEnrollments,
+    enabled: !!user && isStudent,
+    staleTime: 60_000,
+  });
+  const isEnrolled = enrollmentsData?.enrollments?.some((e) => e.courseId === course.id) ?? false;
 
   const handlePrimaryAction = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -126,29 +135,39 @@ export function CourseCard({ course, index = 0 }: { course: Course; index?: numb
             )}
           </div>
           <div className="flex flex-wrap gap-2">
-            <Button size="sm" variant="outline" className="flex-1 min-w-[100px]" asChild>
-              <Link to="/courses/$courseId" params={{ courseId: course.slug }}>View</Link>
-            </Button>
-            {isStudent && (
-              <Button
-                size="sm"
-                variant="hero"
-                className="flex-1 min-w-[120px]"
-                disabled={acting}
-                onClick={handlePrimaryAction}
-              >
-                {acting ? (
-                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                ) : isFree ? (
-                  <>
-                    <PlayCircle className="h-3.5 w-3.5" /> Enroll Free
-                  </>
-                ) : (
-                  <>
-                    <ShoppingCart className="h-3.5 w-3.5" /> Add to Cart
-                  </>
-                )}
+            {isEnrolled ? (
+              <Button size="sm" variant="hero" className="w-full" asChild>
+                <Link to="/learn/$courseId" params={{ courseId: course.slug }}>
+                  <PlayCircle className="h-3.5 w-3.5" /> Continue Learning
+                </Link>
               </Button>
+            ) : (
+              <>
+                <Button size="sm" variant="outline" className="flex-1 min-w-[100px]" asChild>
+                  <Link to="/courses/$courseId" params={{ courseId: course.slug }}>View</Link>
+                </Button>
+                {isStudent && (
+                  <Button
+                    size="sm"
+                    variant="hero"
+                    className="flex-1 min-w-[120px]"
+                    disabled={acting}
+                    onClick={handlePrimaryAction}
+                  >
+                    {acting ? (
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    ) : isFree ? (
+                      <>
+                        <PlayCircle className="h-3.5 w-3.5" /> Enroll Free
+                      </>
+                    ) : (
+                      <>
+                        <ShoppingCart className="h-3.5 w-3.5" /> Add to Cart
+                      </>
+                    )}
+                  </Button>
+                )}
+              </>
             )}
           </div>
         </div>

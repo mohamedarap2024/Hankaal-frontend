@@ -139,6 +139,31 @@ export function DashboardLayout({
           {headerActions}
         </header>
 
+        {/* Mobile: visible section tabs so users never have to find the hidden sidebar. */}
+        <nav className="md:hidden flex gap-2 overflow-x-auto border-b border-border bg-background/95 px-3 py-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          {navItems.map((item) => (
+            <button
+              key={item.id}
+              type="button"
+              onClick={() => onNavigate(item.id)}
+              className={cn(
+                "flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full px-3.5 py-2 text-sm font-medium transition-colors",
+                activeId === item.id
+                  ? "bg-primary text-primary-foreground shadow-sm"
+                  : "bg-muted text-muted-foreground",
+              )}
+            >
+              <item.icon className="h-4 w-4" />
+              {item.label}
+              {item.badge !== undefined && (
+                <span className="text-[10px] font-bold bg-background/30 px-1.5 py-0.5 rounded-full">
+                  {item.badge}
+                </span>
+              )}
+            </button>
+          ))}
+        </nav>
+
         <main className="flex-1 p-4 md:p-6 lg:p-8 max-w-7xl w-full mx-auto">{children}</main>
       </SidebarInset>
     </SidebarProvider>

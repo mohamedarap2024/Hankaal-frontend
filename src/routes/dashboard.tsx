@@ -14,6 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
 import { fetchEnrollments, fetchEnrollmentStats } from "@/lib/api/enrollments";
 import { CertificateButton } from "@/components/courses/CertificateButton";
+import { isCourseDone } from "@/lib/course-progress";
 
 export const Route = createFileRoute("/dashboard")({
   beforeLoad: () => {
@@ -64,6 +65,14 @@ function DashboardPage() {
   const enrollments = data?.enrollments ?? [];
   const orders = ordersData?.orders ?? [];
   const pendingOrders = orders.filter((o) => o.status !== "approved");
+
+  // Certificate is only offered once a course is fully done (all lessons + quizzes).
+  const [doneCourses, setDoneCourses] = useState<Set<string>>(new Set());
+  useEffect(() => {
+    const done = new Set<string>();
+    for (const e of enrollments) if (isCourseDone(e.course.id)) done.add(e.course.id);
+    setDoneCourses(done);
+  }, [data]);
 
   const handleLogout = () => {
     logout();
@@ -239,7 +248,7 @@ function DashboardPage() {
                         <PlayCircle className="h-4 w-4" /> Continue
                       </Link>
                     </Button>
-                    {e.progress >= 100 && user && (
+                    {doneCourses.has(e.course.id) && user && (
                       <CertificateButton
                         studentName={user.name}
                         courseTitle={e.course.title}

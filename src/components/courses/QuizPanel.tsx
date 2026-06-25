@@ -3,7 +3,16 @@ import { HelpCircle, CheckCircle2, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { Quiz } from "@/lib/types";
 
-export function QuizPanel({ quizzes, autoStart }: { quizzes: Quiz[]; autoStart?: boolean }) {
+export function QuizPanel({
+  quizzes,
+  autoStart,
+  onComplete,
+}: {
+  quizzes: Quiz[];
+  autoStart?: boolean;
+  /** Called when a quiz is submitted. `passed` is true when the score is 60% or higher. */
+  onComplete?: (quizId: string, passed: boolean) => void;
+}) {
   const [activeQuiz, setActiveQuiz] = useState<number | null>(autoStart && quizzes.length === 1 ? 0 : null);
   const [answers, setAnswers] = useState<Record<string, number>>({});
   const [submitted, setSubmitted] = useState(false);
@@ -14,6 +23,11 @@ export function QuizPanel({ quizzes, autoStart }: { quizzes: Quiz[]; autoStart?:
 
   const handleSubmit = () => {
     setSubmitted(true);
+    if (quiz) {
+      const correct = quiz.questions.filter((q, i) => answers[`${activeQuiz}-${i}`] === q.correctIndex).length;
+      const passed = correct / Math.max(quiz.questions.length, 1) >= 0.6;
+      onComplete?.(quiz.id ?? `quiz-${activeQuiz}`, passed);
+    }
   };
 
   const score = quiz
@@ -103,6 +117,26 @@ export function QuizPanel({ quizzes, autoStart }: { quizzes: Quiz[]; autoStart?:
             <div className="mt-6 p-4 rounded-xl bg-muted/50 text-center">
               <div className="text-2xl font-bold">{score} / {quiz.questions.length}</div>
               <div className="text-sm text-muted-foreground mt-1">correct answers</div>
+              {score / Math.max(quiz.questions.length, 1) >= 0.6 ? (
+                <div className="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold text-green-600">
+                  <CheckCircle2 className="h-4 w-4" /> Passed
+                </div>
+              ) : (
+                <div className="mt-3 space-y-2">
+                  <div className="inline-flex items-center gap-1.5 text-sm font-semibold text-destructive">
+                    <XCircle className="h-4 w-4" /> Need 60% to pass
+                  </div>
+                  <div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => { setAnswers({}); setSubmitted(false); }}
+                    >
+                      Retry quiz
+                    </Button>
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>

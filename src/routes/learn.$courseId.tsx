@@ -1,5 +1,5 @@
 import { createFileRoute, Link, redirect, notFound } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, CheckCircle2, PlayCircle, BookOpen, HelpCircle, Video, Award } from "lucide-react";
 import { SiteShell } from "@/components/site/SiteShell";
@@ -13,6 +13,7 @@ import { fetchCourse, fetchCourseQuizzes } from "@/lib/api/courses";
 import { fetchCoursePreview } from "@/lib/api/instructor";
 import { checkEnrollment, updateProgress } from "@/lib/api/enrollments";
 import { normalizeCourse } from "@/lib/normalize-course";
+import { loadCourseProgress, saveCourseProgress, markCourseDone } from "@/lib/course-progress";
 import { useAuth } from "@/contexts/AuthContext";
 import type { Course, Quiz } from "@/lib/types";
 import { toast } from "sonner";
@@ -61,6 +62,9 @@ function CourseLearnPage() {
   const queryClient = useQueryClient();
   const [activeIndex, setActiveIndex] = useState(0);
   const [tab, setTab] = useState("lessons");
+  const [watched, setWatched] = useState<Set<number>>(new Set());
+  const [completedQuizzes, setCompletedQuizzes] = useState<Set<string>>(new Set());
+  const [loadedFor, setLoadedFor] = useState<string | null>(null);
 
   const isStaff = !!user && ["admin", "instructor"].includes(user.role);
   const previewCourse = loaderData.course ? normalizeCourse(loaderData.course) : null;
@@ -101,6 +105,16 @@ function CourseLearnPage() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["enrollments"] }),
   });
 
+  // Load this course's saved lesson/quiz completion once it's known.
+  const courseId = course?.id;
+  useEffect(() => {
+    if (!courseId || loadedFor === courseId) return;
+    const saved = loadCourseProgress(courseId);
+    setWatched(new Set(saved.watched));
+    setCompletedQuizzes(new Set(saved.quizzes));
+    setLoadedFor(courseId);
+  }, [courseId, loadedFor]);
+
   const isAdmin = user?.role === "admin";
   const instructorId = staffMeta?.instructorId;
   const isOwner = user?.role === "instructor" && instructorId === user.id;
@@ -135,7 +149,7 @@ function CourseLearnPage() {
   const quizzes: Quiz[] = lessonQuizzes.length > 0 ? lessonQuizzes : apiQuizzes;
   const activeLesson = lessons[activeIndex];
   const activeLessonQuiz: Quiz[] = activeLesson?.quiz?.questions?.length
-    ? [{ id: `active-quiz`, title: `${activeLesson.title} Quiz`, questions: activeLesson.quiz.questions }]
+    ? [{ id: `lesson-quiz-${activeIndex}`, title: `${activeLesson.title} Quiz`, questions: activeLesson.quiz.questions }]
     : [];
 
   const canAccess = isEnrolled || isAdmin || isOwner;
@@ -161,9 +175,38 @@ function CourseLearnPage() {
 
   const progress = enrollmentData?.progress ?? 0;
 
+  const requiredQuizIds = quizzes.map((q) => q.id);
+  const allLessonsWatched = lessons.length === 0 || lessons.every((_, i) => watched.has(i));
+  const allQuizzesDone = requiredQuizIds.every((id) => completedQuizzes.has(id));
+  const fullyCompleted = allLessonsWatched && allQuizzesDone;
+
+  const persist = (nextWatched: Set<number>, nextQuizzes: Set<string>) => {
+    if (courseId) saveCourseProgress(courseId, { watched: [...nextWatched], quizzes: [...nextQuizzes] });
+  };
+
+  const syncDone = (nextWatched: Set<number>, nextQuizzes: Set<string>) => {
+    const lessonsOk = lessons.length === 0 || lessons.every((_, i) => nextWatched.has(i));
+    const quizzesOk = requiredQuizIds.every((id) => nextQuizzes.has(id));
+    if (courseId) markCourseDone(courseId, lessonsOk && quizzesOk);
+  };
+
+  const handleQuizComplete = (quizId: string, passed: boolean) => {
+    if (!passed || completedQuizzes.has(quizId)) return;
+    const next = new Set(completedQuizzes).add(quizId);
+    setCompletedQuizzes(next);
+    persist(watched, next);
+    syncDone(watched, next);
+    toast.success("Quiz passed!");
+  };
+
   const markComplete = () => {
+    const nextWatched = new Set(watched).add(activeIndex);
+    setWatched(nextWatched);
+    persist(nextWatched, completedQuizzes);
+    syncDone(nextWatched, completedQuizzes);
+
     if (isEnrolled && enrollmentData?.enrollmentId) {
-      const pct = Math.round(((activeIndex + 1) / Math.max(lessons.length, 1)) * 100);
+      const pct = Math.round((nextWatched.size / Math.max(lessons.length, 1)) * 100);
       progressMut.mutate(pct);
       toast.success("Progress saved!");
     } else {
@@ -194,14 +237,14 @@ function CourseLearnPage() {
           <p className="text-muted-foreground mt-1">Watch lessons, complete the course, and take quizzes below.</p>
         </div>
 
-        {isEnrolled && progress >= 100 && user && enrollmentData?.enrollmentId && (
+        {isEnrolled && user && enrollmentData?.enrollmentId && fullyCompleted && (
           <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-2xl border border-accent/40 bg-accent/10 p-5">
             <div className="flex items-center gap-3">
               <Award className="h-8 w-8 text-accent shrink-0" />
               <div>
                 <h2 className="font-display font-bold text-lg">Course completed!</h2>
                 <p className="text-sm text-muted-foreground">
-                  Download your certificate of completion for {course.title}.
+                  You watched every lesson and passed every quiz. Download your certificate for {course.title}.
                 </p>
               </div>
             </div>
@@ -213,6 +256,22 @@ function CourseLearnPage() {
               label="Download Certificate"
               className="shrink-0"
             />
+          </div>
+        )}
+
+        {isEnrolled && !fullyCompleted && (allLessonsWatched || completedQuizzes.size > 0) && (
+          <div className="mb-6 rounded-2xl border border-border bg-card p-4 text-sm">
+            <p className="font-medium mb-1">Almost there — finish to unlock your certificate:</p>
+            <div className="flex flex-wrap gap-x-5 gap-y-1 text-muted-foreground">
+              <span className={allLessonsWatched ? "text-green-600 font-medium" : ""}>
+                {allLessonsWatched ? "✓" : "•"} Lessons watched: {watched.size}/{lessons.length}
+              </span>
+              {requiredQuizIds.length > 0 && (
+                <span className={allQuizzesDone ? "text-green-600 font-medium" : ""}>
+                  {allQuizzesDone ? "✓" : "•"} Quizzes passed: {requiredQuizIds.filter((id) => completedQuizzes.has(id)).length}/{requiredQuizIds.length}
+                </span>
+              )}
+            </div>
           </div>
         )}
 
@@ -251,7 +310,7 @@ function CourseLearnPage() {
                 </div>
                 {activeLessonQuiz.length > 0 && (
                   <div className="mt-4">
-                    <QuizPanel quizzes={activeLessonQuiz} autoStart />
+                    <QuizPanel quizzes={activeLessonQuiz} autoStart onComplete={handleQuizComplete} />
                   </div>
                 )}
               </div>
@@ -287,7 +346,7 @@ function CourseLearnPage() {
                 <p className="font-medium">No quizzes for this course yet</p>
               </div>
             ) : (
-              <QuizPanel quizzes={quizzes} />
+              <QuizPanel quizzes={quizzes} onComplete={handleQuizComplete} />
             )}
           </TabsContent>
         </Tabs>
