@@ -1,3 +1,7 @@
+/** Public website URL — set VITE_SITE_URL in the frontend env to your real domain. */
+export const SITE_URL =
+  (import.meta.env.VITE_SITE_URL as string | undefined)?.replace(/\/$/, "") || "https://hankaal.vercel.app";
+
 /** Official Hankaal College contact & payment defaults */
 export const SITE_CONTACT = {
   name: "Hankaal College",

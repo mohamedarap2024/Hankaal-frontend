@@ -13,6 +13,27 @@ import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { SITE_CONTACT, SITE_URL } from "@/lib/site-contact";
+
+const orgJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "EducationalOrganization",
+  name: SITE_CONTACT.name,
+  alternateName: "Hankaal",
+  url: SITE_URL,
+  logo: `${SITE_URL}/hankaal-logo.png`,
+  image: `${SITE_URL}/hankaal-logo.png`,
+  description: SITE_CONTACT.description,
+  email: SITE_CONTACT.email,
+  telephone: SITE_CONTACT.phone,
+  slogan: SITE_CONTACT.tagline,
+  address: {
+    "@type": "PostalAddress",
+    addressLocality: "Mogadishu",
+    addressCountry: "SO",
+  },
+  sameAs: [SITE_CONTACT.facebookUrl],
+};
 
 function NotFoundComponent() {
   return (
@@ -79,14 +100,28 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Hankaal College — E-Learning Platform" },
-      { name: "description", content: "Practice, Patience, Progress. Online courses from Hankaal College." },
+      { title: "Hankaal College — Online English Classes | Mogadishu" },
+      {
+        name: "description",
+        content:
+          "Hankaal College offers online English classes to Somali-speaking students across the globe. Based in Mogadishu. Practice · Patience · Progress.",
+      },
       { name: "author", content: "Hankaal College" },
-      { property: "og:title", content: "Hankaal College" },
-      { property: "og:description", content: "Empowering learners through accessible online education." },
+      { name: "keywords", content: "Hankaal College, online English, Somali, Mogadishu, English classes, e-learning" },
+      { property: "og:site_name", content: "Hankaal College" },
+      { property: "og:title", content: "Hankaal College — Online English Classes" },
+      {
+        property: "og:description",
+        content:
+          "Hankaal College offers online English classes to Somali-speaking students across the globe. Based in Mogadishu.",
+      },
       { property: "og:type", content: "website" },
+      { property: "og:url", content: SITE_URL },
+      { property: "og:image", content: `${SITE_URL}/hankaal-logo.png` },
       { name: "twitter:card", content: "summary" },
-      { name: "twitter:site", content: "@Lovable" },
+      { name: "twitter:title", content: "Hankaal College — Online English Classes" },
+      { name: "twitter:description", content: SITE_CONTACT.description },
+      { name: "twitter:image", content: `${SITE_URL}/hankaal-logo.png` },
     ],
     links: [
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -117,6 +152,12 @@ function RootShell({ children }: { children: ReactNode }) {
           dangerouslySetInnerHTML={{
             __html: `try{if(localStorage.getItem('theme')==='light'){document.documentElement.classList.remove('dark');}}catch(e){}`,
           }}
+        />
+        <link rel="canonical" href={SITE_URL} />
+        {/* Business profile for Google: name, link, logo, and bio. */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(orgJsonLd) }}
         />
         <HeadContent />
       </head>

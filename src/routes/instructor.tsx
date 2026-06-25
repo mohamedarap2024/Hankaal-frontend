@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { RoleAccessLogin } from "@/components/auth/RoleAccessLogin";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
-import { BookOpen, Plus, Clock, Pencil, PlayCircle, Trash2, Users, ShoppingCart, DollarSign } from "lucide-react";
+import { BookOpen, Plus, Clock, Pencil, PlayCircle, Trash2, Users, ShoppingCart, DollarSign, ChevronDown, Mail } from "lucide-react";
 import { DashboardLayout, DashboardSection, ContentCard } from "@/components/dashboard/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -10,6 +10,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { CourseForm } from "@/components/courses/CourseForm";
 import {
   fetchInstructorCourses,
+  fetchCourseStudents,
   createInstructorCourse,
   updateInstructorCourse,
   deleteInstructorCourse,
@@ -57,6 +58,7 @@ function InstructorDashboard() {
   const queryClient = useQueryClient();
   const [section, setSection] = useState<InstructorSection>("courses");
   const [editingCourse, setEditingCourse] = useState<InstructorCourse | null>(null);
+  const [expandedStudents, setExpandedStudents] = useState<string | null>(null);
 
   const { data } = useQuery({
     queryKey: ["instructor-courses"],
@@ -180,6 +182,14 @@ function InstructorDashboard() {
                   {c.status}
                 </Badge>
                 <div className="flex flex-wrap gap-2">
+                  <Button
+                    size="sm"
+                    variant={expandedStudents === c.id ? "default" : "outline"}
+                    onClick={() => setExpandedStudents(expandedStudents === c.id ? null : c.id)}
+                  >
+                    <Users className="h-4 w-4" /> Students
+                    <ChevronDown className={`h-4 w-4 transition-transform ${expandedStudents === c.id ? "rotate-180" : ""}`} />
+                  </Button>
                   <Button size="sm" variant="hero" asChild>
                     <Link to="/learn/$courseId" params={{ courseId: c.slug }}>
                       <PlayCircle className="h-4 w-4" /> Open
@@ -201,6 +211,11 @@ function InstructorDashboard() {
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>
+                {expandedStudents === c.id && (
+                  <div className="w-full">
+                    <CourseStudents courseId={c.id} />
+                  </div>
+                )}
               </ContentCard>
             ))}
             {courses.length === 0 && (
@@ -252,5 +267,80 @@ function InstructorDashboard() {
         </DashboardSection>
       )}
     </DashboardLayout>
+  );
+}
+
+function StatusBadge({ status }: { status: string }) {
+  const variant =
+    status === "approved" ? "default" : status === "paid" ? "secondary" : status === "rejected" ? "destructive" : "outline";
+  return <Badge variant={variant} className="text-[10px] capitalize">{status.replace(/_/g, " ")}</Badge>;
+}
+
+function CourseStudents({ courseId }: { courseId: string }) {
+  const { data, isLoading } = useQuery({
+    queryKey: ["course-students", courseId],
+    queryFn: () => fetchCourseStudents(courseId),
+  });
+
+  if (isLoading) {
+    return <div className="mt-4 rounded-xl border border-border bg-muted/20 p-4 text-sm text-muted-foreground">Loading students…</div>;
+  }
+
+  const enrolled = data?.enrolled ?? [];
+  const orders = data?.orders ?? [];
+  const approvedOrders = orders.filter((o) => o.status === "approved");
+  const requestedOrders = orders.filter((o) => o.status !== "approved");
+
+  return (
+    <div className="mt-4 grid gap-4 md:grid-cols-2 rounded-xl border border-border bg-muted/20 p-4">
+      <div>
+        <h4 className="font-semibold text-sm mb-2 flex items-center gap-1.5">
+          <Users className="h-4 w-4 text-primary" /> Enrolled / Approved ({enrolled.length})
+        </h4>
+        {enrolled.length === 0 ? (
+          <p className="text-xs text-muted-foreground">No students have access yet.</p>
+        ) : (
+          <ul className="space-y-2">
+            {enrolled.map((s, i) => (
+              <li key={i} className="flex items-center justify-between gap-2 text-sm rounded-lg bg-card border border-border px-3 py-2">
+                <div className="min-w-0">
+                  <div className="font-medium truncate">{s.name}</div>
+                  <div className="text-xs text-muted-foreground truncate flex items-center gap-1">
+                    <Mail className="h-3 w-3" /> {s.email}
+                  </div>
+                </div>
+                <span className="text-xs font-medium text-muted-foreground shrink-0">{s.progress}%</span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+
+      <div>
+        <h4 className="font-semibold text-sm mb-2 flex items-center gap-1.5">
+          <ShoppingCart className="h-4 w-4 text-primary" /> Orders / Requests ({orders.length})
+        </h4>
+        {orders.length === 0 ? (
+          <p className="text-xs text-muted-foreground">No orders yet.</p>
+        ) : (
+          <ul className="space-y-2">
+            {[...requestedOrders, ...approvedOrders].map((o, i) => (
+              <li key={i} className="flex items-center justify-between gap-2 text-sm rounded-lg bg-card border border-border px-3 py-2">
+                <div className="min-w-0">
+                  <div className="font-medium truncate">{o.name}</div>
+                  <div className="text-xs text-muted-foreground truncate flex items-center gap-1">
+                    <Mail className="h-3 w-3" /> {o.email}
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  <span className="text-xs text-muted-foreground">${o.amount}</span>
+                  <StatusBadge status={o.status} />
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    </div>
   );
 }

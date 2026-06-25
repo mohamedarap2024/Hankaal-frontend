@@ -35,6 +35,27 @@ export type InstructorCourseStats = {
   instructorEarnings: number;
 };
 
+export type CourseStudent = {
+  name: string;
+  email: string;
+  progress: number;
+  enrolledAt: string;
+};
+
+export type CourseOrder = {
+  name: string;
+  email: string;
+  status: string;
+  amount: number;
+  createdAt: string;
+};
+
+export async function fetchCourseStudents(courseId: string) {
+  return apiFetch<{ enrolled: CourseStudent[]; orders: CourseOrder[] }>(
+    `/api/instructor/courses/${courseId}/students`,
+  );
+}
+
 export async function fetchInstructorCourses() {
   return apiFetch<{ courses: (Course & { status: string; quizzes?: QuizInput[] } & Partial<InstructorCourseStats>)[] }>(
     "/api/instructor/courses",

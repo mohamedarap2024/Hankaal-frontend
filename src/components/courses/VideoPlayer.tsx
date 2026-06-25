@@ -70,6 +70,9 @@ export function VideoPlayer({ url, title, thumbnail, className = "aspect-video",
         muted={autoPlay} // muted is required for autoplay to be allowed
         loop={loop}
         playsInline
+        controlsList="nodownload noremoteplayback"
+        disablePictureInPicture
+        onContextMenu={(e) => e.preventDefault()}
         className={`w-full h-full bg-black ${className}`}
       >
         Your browser does not support video playback.
