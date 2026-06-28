@@ -150,6 +150,18 @@ export async function deleteTeamMember(id: string) {
   return apiFetch(`/api/admin/team/${id}`, { method: "DELETE" });
 }
 
+export async function deleteOrder(orderId: string) {
+  return apiFetch<{ message: string }>(`/api/admin/orders/${orderId}`, { method: "DELETE" });
+}
+
+export async function deleteEnrollment(enrollmentId: string) {
+  return apiFetch<{ message: string }>(`/api/admin/enrollments/${enrollmentId}`, { method: "DELETE" });
+}
+
+export async function deleteMessage(messageId: string) {
+  return apiFetch<{ message: string }>(`/api/admin/messages/${messageId}`, { method: "DELETE" });
+}
+
 export async function fetchAdminSettings() {
   return apiFetch<{ settings: Record<string, string> }>("/api/admin/settings");
 }

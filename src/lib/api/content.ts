@@ -20,3 +20,15 @@ export async function fetchFaqs() {
 export async function fetchTeam() {
   return apiFetch<{ team: TeamMember[] }>("/api/content/team");
 }
+
+export type PublicInstructor = {
+  id: string;
+  name: string;
+  avatar: string | null;
+  role: "instructor" | "admin";
+  courseCount: number;
+};
+
+export async function fetchInstructors() {
+  return apiFetch<{ instructors: PublicInstructor[] }>("/api/content/instructors");
+}

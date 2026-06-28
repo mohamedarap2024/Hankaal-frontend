@@ -3,7 +3,7 @@ import { RoleAccessLogin } from "@/components/auth/RoleAccessLogin";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import {
-  BookOpen, Mail, Trash2, Users, GraduationCap, MessageSquare, Plus, LayoutDashboard, Pencil, PlayCircle, Settings, Receipt,
+  BookOpen, Mail, Trash2, Users, GraduationCap, MessageSquare, Plus, LayoutDashboard, Pencil, PlayCircle, Settings, Receipt, UserCircle,
 } from "lucide-react";
 import { DashboardLayout, DashboardSection, StatGrid, ContentCard } from "@/components/dashboard/DashboardLayout";
 import { AdminOrderCard } from "@/components/site/AdminOrderCard";
@@ -22,11 +22,14 @@ import {
   fetchAdminTestimonials, saveTestimonial, deleteTestimonial,
   fetchAdminTeam, saveTeamMember, deleteTeamMember,
   fetchAdminSettings, updateAdminSettings, createAdminUser,
+  deleteOrder, deleteEnrollment, deleteMessage,
 } from "@/lib/api/admin";
 import { toast } from "sonner";
 import { ApiError } from "@/lib/api/client";
 import { CourseForm } from "@/components/courses/CourseForm";
 import { createAdminCourse, updateAdminCourse, courseToFormValues } from "@/lib/api/instructor";
+import { ProfileEditor } from "@/components/site/ProfileEditor";
+import { formatDate, formatDateTime } from "@/lib/format";
 import type { Course } from "@/lib/types";
 
 export const Route = createFileRoute("/admin")({
@@ -59,7 +62,7 @@ function AdminPage() {
   return <AdminDashboard />;
 }
 
-type AdminSection = "overview" | "orders" | "users" | "courses" | "enrollments" | "messages" | "cms";
+type AdminSection = "overview" | "orders" | "users" | "courses" | "enrollments" | "messages" | "cms" | "profile";
 
 function AdminDashboard() {
   const { user, logout } = useAuth();
@@ -114,6 +117,36 @@ function AdminDashboard() {
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["admin-users"] }); toast.success("Role updated"); },
   });
 
+  const deleteOrderMut = useMutation({
+    mutationFn: deleteOrder,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-orders"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-stats"] });
+      toast.success("Order deleted");
+    },
+    onError: (e) => toast.error(e instanceof ApiError ? e.message : "Failed"),
+  });
+
+  const deleteEnrollmentMut = useMutation({
+    mutationFn: deleteEnrollment,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-enrollments"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-stats"] });
+      toast.success("Enrollment removed");
+    },
+    onError: (e) => toast.error(e instanceof ApiError ? e.message : "Failed"),
+  });
+
+  const deleteMessageMut = useMutation({
+    mutationFn: deleteMessage,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-messages"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-stats"] });
+      toast.success("Message deleted");
+    },
+    onError: (e) => toast.error(e instanceof ApiError ? e.message : "Failed"),
+  });
+
   const createUserMut = useMutation({
     mutationFn: createAdminUser,
     onSuccess: (res) => {
@@ -156,6 +189,7 @@ function AdminDashboard() {
     { id: "enrollments", label: "Enrollments", icon: GraduationCap, badge: stats?.enrollments },
     { id: "messages", label: "Messages", icon: MessageSquare, badge: stats?.messages },
     { id: "cms", label: "Site CMS", icon: Settings },
+    { id: "profile", label: "Profile", icon: UserCircle },
   ];
 
   return (
@@ -212,7 +246,22 @@ function AdminDashboard() {
           ) : (
             <div className="space-y-4">
               {(ordersData?.orders ?? []).map((o) => (
-                <AdminOrderCard key={o.id} order={o} />
+                <div key={o.id} className="relative">
+                  <AdminOrderCard order={o} />
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="absolute top-3 right-3 text-destructive hover:text-destructive"
+                    title="Delete order"
+                    onClick={() => {
+                      if (window.confirm("Delete this order permanently? This does not remove course access.")) {
+                        deleteOrderMut.mutate(o.id);
+                      }
+                    }}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
               ))}
             </div>
           )}
@@ -305,7 +354,7 @@ function AdminDashboard() {
                         </Select>
                       </TableCell>
                       <TableCell className="text-muted-foreground text-sm">
-                        {new Date(u.createdAt).toLocaleDateString()}
+                        {formatDate(u.createdAt)}
                       </TableCell>
                       <TableCell className="text-right">
                         <Button variant="ghost" size="icon" onClick={() => deleteUserMut.mutate(u.id)} disabled={u.email === user?.email}>
@@ -544,6 +593,7 @@ function AdminDashboard() {
                     <TableHead>Course</TableHead>
                     <TableHead>Progress</TableHead>
                     <TableHead>Enrolled</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -556,7 +606,22 @@ function AdminDashboard() {
                       <TableCell>{e.courseTitle}</TableCell>
                       <TableCell>{e.progress}%</TableCell>
                       <TableCell className="text-muted-foreground text-sm">
-                        {new Date(e.enrolledAt).toLocaleDateString()}
+                        {formatDate(e.enrolledAt)}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="text-destructive hover:text-destructive"
+                          title="Remove enrollment"
+                          onClick={() => {
+                            if (window.confirm(`Remove ${e.userName}'s access to "${e.courseTitle}"?`)) {
+                              deleteEnrollmentMut.mutate(e.id);
+                            }
+                          }}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
                       </TableCell>
                     </TableRow>
                   ))}
@@ -579,7 +644,20 @@ function AdminDashboard() {
                   <ContentCard key={m.id}>
                     <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
                       <div className="font-semibold">{m.firstName} {m.lastName}</div>
-                      <div className="text-xs text-muted-foreground">{new Date(m.createdAt).toLocaleString()}</div>
+                      <div className="flex items-center gap-2">
+                        <div className="text-xs text-muted-foreground">{formatDateTime(m.createdAt)}</div>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7 text-destructive hover:text-destructive"
+                          title="Delete message"
+                          onClick={() => {
+                            if (window.confirm("Delete this message?")) deleteMessageMut.mutate(m.id);
+                          }}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </div>
                     <div className="text-sm text-muted-foreground">{m.email}</div>
                     <div className="font-medium mt-2">{m.subject}</div>
@@ -588,6 +666,12 @@ function AdminDashboard() {
                 ))
               )}
             </div>
+        </DashboardSection>
+      )}
+
+      {section === "profile" && (
+        <DashboardSection title="My Profile" description="Your admin account uses the Hankaal logo by default. Update your name or photo.">
+          <ProfileEditor />
         </DashboardSection>
       )}
     </DashboardLayout>

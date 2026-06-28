@@ -15,7 +15,8 @@ import { CountUp } from "@/components/site/CountUp";
 import { useQuery } from "@tanstack/react-query";
 import { courses as fallbackCourses, faqs as fallbackFaqs, stats as fallbackStats, testimonials as fallbackTestimonials } from "@/lib/mock-data";
 import { fetchCourses } from "@/lib/api/courses";
-import { fetchFaqs, fetchStats, fetchSiteSettings, fetchTestimonials } from "@/lib/api/content";
+import { fetchFaqs, fetchStats, fetchSiteSettings, fetchTestimonials, fetchInstructors } from "@/lib/api/content";
+import { resolveMediaUrl } from "@/lib/media";
 import { subscribeNewsletter } from "@/lib/api/contact";
 import { HERO_IMAGE } from "@/lib/images";
 import { SITE_CONTACT, ussdPaymentHint } from "@/lib/site-contact";
@@ -69,8 +70,13 @@ function HomePage() {
     queryFn: fetchSiteSettings,
     staleTime: 60_000,
   });
+  const { data: instructorsData } = useQuery({
+    queryKey: ["instructors"],
+    queryFn: fetchInstructors,
+  });
 
   const popular = (coursesData?.courses ?? fallbackCourses).slice(0, 6);
+  const instructors = instructorsData?.instructors ?? [];
   const stats = statsData?.stats ?? fallbackStats;
   const testimonials = testimonialsData?.testimonials ?? fallbackTestimonials;
   const faqs = faqsData?.faqs ?? fallbackFaqs;
@@ -221,6 +227,43 @@ function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* Instructors */}
+      {instructors.length > 0 && (
+        <section className="container mx-auto px-4 py-20">
+          <SectionHeader eyebrow="Our Educators" title="Meet our instructors" desc="Learn from the educators behind Hankaal College." />
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 mt-12">
+            {instructors.map((ins, i) => {
+              const avatar =
+                resolveMediaUrl(ins.avatar ?? undefined) ||
+                (ins.role === "admin" ? "/hankaal-logo.png" : "https://i.pravatar.cc/150?img=68");
+              return (
+                <motion.div
+                  key={ins.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: (i % 6) * 0.06 }}
+                  className="flex items-center gap-4 p-5 rounded-2xl bg-card border border-border hover:border-primary/30 transition-colors"
+                >
+                  <img
+                    src={avatar}
+                    alt={ins.name}
+                    className="h-16 w-16 rounded-full object-cover border border-border bg-muted shrink-0"
+                    onError={(e) => { (e.currentTarget as HTMLImageElement).src = "https://i.pravatar.cc/150?img=68"; }}
+                  />
+                  <div className="min-w-0">
+                    <div className="font-display font-bold text-lg truncate">{ins.name}</div>
+                    <div className="text-sm text-muted-foreground">
+                      {ins.courseCount} {ins.courseCount === 1 ? "Course" : "Courses"}
+                    </div>
+                  </div>
+                </motion.div>
+              );
+            })}
+          </div>
+        </section>
+      )}
 
       {/* Testimonials */}
       <section className="container mx-auto px-4 py-20">

@@ -11,14 +11,15 @@ import { ApiError } from "@/lib/api/client";
 
 export function ProfileEditor() {
   const { user, updateProfile } = useAuth();
+  const adminLogo = "/hankaal-logo.png";
   const [name, setName] = useState(user?.name ?? "");
-  const [avatar, setAvatar] = useState(user?.avatarUrl ?? "");
+  const [avatar, setAvatar] = useState(user?.avatarUrl ?? (user?.role === "admin" ? adminLogo : ""));
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
 
   if (!user) return null;
 
-  const preview = resolveMediaUrl(avatar);
+  const preview = resolveMediaUrl(avatar) || (user.role === "admin" ? adminLogo : undefined);
 
   const pickImage = () => {
     const input = document.createElement("input");
