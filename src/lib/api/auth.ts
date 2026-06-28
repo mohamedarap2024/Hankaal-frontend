@@ -25,3 +25,10 @@ export async function loginWithGoogle(credential: string) {
 export async function getMe() {
   return apiFetch<{ user: User }>("/api/auth/me");
 }
+
+export async function updateProfile(data: { name?: string; avatarUrl?: string }) {
+  return apiFetch<{ user: User }>("/api/auth/profile", {
+    method: "PATCH",
+    body: JSON.stringify(data),
+  });
+}

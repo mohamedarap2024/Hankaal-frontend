@@ -2,12 +2,13 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { RoleAccessLogin } from "@/components/auth/RoleAccessLogin";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
-import { BookOpen, Plus, Clock, Pencil, PlayCircle, Trash2, Users, ShoppingCart, DollarSign, ChevronDown, Mail } from "lucide-react";
+import { BookOpen, Plus, Clock, Pencil, PlayCircle, Trash2, Users, ShoppingCart, DollarSign, ChevronDown, Mail, UserCircle } from "lucide-react";
 import { DashboardLayout, DashboardSection, ContentCard } from "@/components/dashboard/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
 import { CourseForm } from "@/components/courses/CourseForm";
+import { ProfileEditor } from "@/components/site/ProfileEditor";
 import {
   fetchInstructorCourses,
   fetchCourseStudents,
@@ -26,7 +27,7 @@ export const Route = createFileRoute("/instructor")({
 });
 
 type InstructorCourse = Course & { status: string; quizzes?: QuizInput[] };
-type InstructorSection = "courses" | "create";
+type InstructorSection = "courses" | "create" | "profile";
 
 function InstructorPage() {
   const { user, loading } = useAuth();
@@ -117,6 +118,7 @@ function InstructorDashboard() {
   const navItems = [
     { id: "courses", label: "My Courses", icon: BookOpen, badge: courses.length || undefined },
     { id: "create", label: editingCourse ? "Edit Course" : "Create Course", icon: editingCourse ? Pencil : Plus },
+    { id: "profile", label: "Profile", icon: UserCircle },
   ];
 
   return (
@@ -264,6 +266,12 @@ function InstructorDashboard() {
               }
             }}
           />
+        </DashboardSection>
+      )}
+
+      {section === "profile" && (
+        <DashboardSection title="My Profile" description="Update your name and the photo shown on your courses.">
+          <ProfileEditor />
         </DashboardSection>
       )}
     </DashboardLayout>

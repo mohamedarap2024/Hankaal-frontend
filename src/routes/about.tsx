@@ -7,6 +7,7 @@ import { useQuery } from "@tanstack/react-query";
 import { stats as fallbackStats, team as fallbackTeam } from "@/lib/mock-data";
 import { fetchStats, fetchTeam, fetchSiteSettings } from "@/lib/api/content";
 import { VideoPlayer } from "@/components/courses/VideoPlayer";
+import { CountUp } from "@/components/site/CountUp";
 import { SITE_CONTACT } from "@/lib/site-contact";
 
 export const Route = createFileRoute("/about")({
@@ -106,7 +107,7 @@ function AboutPage() {
         <div className="rounded-3xl p-10 md:p-14 grid grid-cols-2 md:grid-cols-4 gap-6" style={{ background: "var(--gradient-hero)" }}>
           {stats.map((s) => (
             <div key={s.label} className="text-center text-primary-foreground">
-              <div className="text-4xl md:text-5xl font-display font-extrabold">{s.value}</div>
+              <CountUp value={s.value} className="text-4xl md:text-5xl font-display font-extrabold" />
               <div className="text-sm opacity-85 mt-1">{s.label}</div>
             </div>
           ))}

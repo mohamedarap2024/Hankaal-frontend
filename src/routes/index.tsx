@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { toast } from "sonner";
 import { CourseCard } from "@/components/site/CourseCard";
+import { CountUp } from "@/components/site/CountUp";
 import { useQuery } from "@tanstack/react-query";
 import { courses as fallbackCourses, faqs as fallbackFaqs, stats as fallbackStats, testimonials as fallbackTestimonials } from "@/lib/mock-data";
 import { fetchCourses } from "@/lib/api/courses";
@@ -119,7 +120,7 @@ function HomePage() {
             <div className="mt-10 grid grid-cols-2 sm:grid-cols-4 gap-4">
               {stats.map((s) => (
                 <div key={s.label} className="rounded-xl bg-card border border-border px-4 py-3">
-                  <div className="text-2xl font-display font-bold text-primary">{s.value}</div>
+                  <CountUp value={s.value} className="text-2xl font-display font-bold text-primary" />
                   <div className="text-xs text-muted-foreground">{s.label}</div>
                 </div>
               ))}
@@ -213,7 +214,7 @@ function HomePage() {
               { v: "120+", l: "Countries reached" }, { v: "4.9★", l: "Average rating" },
             ].map((s) => (
               <div key={s.l} className="bg-white/10 backdrop-blur border border-white/20 rounded-2xl p-6 text-primary-foreground">
-                <div className="text-3xl font-display font-bold">{s.v}</div>
+                <CountUp value={s.v} className="text-3xl font-display font-bold" />
                 <div className="text-sm opacity-80 mt-1">{s.l}</div>
               </div>
             ))}

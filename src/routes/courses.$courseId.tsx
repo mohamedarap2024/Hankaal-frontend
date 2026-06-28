@@ -185,7 +185,12 @@ function CourseDetails() {
               <span className="flex items-center gap-1.5"><Globe className="h-4 w-4" /> English</span>
             </div>
             <div className="mt-5 flex items-center gap-3">
-              <img src={course.instructor.avatar} alt={course.instructor.name} className="h-10 w-10 rounded-full border-2 border-white/30" />
+              <img
+                src={resolveMediaUrl(course.instructor.avatar) || course.instructor.avatar}
+                alt={course.instructor.name}
+                className="h-10 w-10 rounded-full border-2 border-white/30 object-cover bg-white/10"
+                onError={(e) => { (e.currentTarget as HTMLImageElement).src = "https://i.pravatar.cc/150?img=68"; }}
+              />
               <div className="text-sm">
                 <div>Taught by <strong>{course.instructor.name}</strong></div>
                 <div className="opacity-80 text-xs">{course.instructor.title}</div>

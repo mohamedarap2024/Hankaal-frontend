@@ -113,7 +113,15 @@ export function CourseCard({ course, index = 0 }: { course: Course; index?: numb
             {course.title}
           </h3>
         </Link>
-        <p className="text-sm text-muted-foreground mt-1.5">by {course.instructor.name}</p>
+        <div className="flex items-center gap-2 mt-1.5">
+          <img
+            src={resolveMediaUrl(course.instructor.avatar) || course.instructor.avatar}
+            alt={course.instructor.name}
+            className="h-5 w-5 rounded-full object-cover bg-muted shrink-0"
+            onError={(e) => { (e.currentTarget as HTMLImageElement).src = "https://i.pravatar.cc/150?img=68"; }}
+          />
+          <p className="text-sm text-muted-foreground truncate">by {course.instructor.name}</p>
+        </div>
         <div className="flex items-center gap-3 mt-3 text-xs text-muted-foreground">
           <span className="flex items-center gap-1 text-accent font-semibold">
             <Star className="h-3.5 w-3.5 fill-current" /> {course.rating.toFixed(1)}

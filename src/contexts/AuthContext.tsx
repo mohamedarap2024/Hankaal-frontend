@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
-import { getMe, login as apiLogin, register as apiRegister, loginWithGoogle } from "@/lib/api/auth";
+import { getMe, login as apiLogin, register as apiRegister, loginWithGoogle, updateProfile as apiUpdateProfile } from "@/lib/api/auth";
 import { setToken } from "@/lib/api/client";
 import type { User } from "@/lib/types";
 
@@ -9,6 +9,7 @@ type AuthContextValue = {
   login: (email: string, password: string) => Promise<User>;
   register: (name: string, email: string, password: string) => Promise<User>;
   googleLogin: (credential: string) => Promise<User>;
+  updateProfile: (data: { name?: string; avatarUrl?: string }) => Promise<User>;
   logout: () => void;
 };
 
@@ -51,13 +52,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return res.user;
   }, []);
 
+  const updateProfile = useCallback(async (data: { name?: string; avatarUrl?: string }) => {
+    const res = await apiUpdateProfile(data);
+    setUser(res.user);
+    return res.user;
+  }, []);
+
   const logout = useCallback(() => {
     setToken(null);
     setUser(null);
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, googleLogin, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, register, googleLogin, updateProfile, logout }}>
       {children}
     </AuthContext.Provider>
   );

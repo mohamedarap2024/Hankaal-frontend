@@ -3,7 +3,7 @@ import { SITE_CONTACT, ussdPaymentHint } from "@/lib/site-contact";
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
-  Award, BookOpen, GraduationCap, PlayCircle, TrendingUp, Receipt, ShoppingCart, CheckCircle2, LayoutDashboard, Compass,
+  Award, BookOpen, GraduationCap, PlayCircle, TrendingUp, Receipt, ShoppingCart, CheckCircle2, LayoutDashboard, Compass, UserCircle,
 } from "lucide-react";
 import { fetchMyOrders } from "@/lib/api/orders";
 import { StudentOrderCard } from "@/components/site/StudentOrderCard";
@@ -15,6 +15,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { fetchEnrollments, fetchEnrollmentStats } from "@/lib/api/enrollments";
 import { CertificateButton } from "@/components/courses/CertificateButton";
 import { isCourseDone } from "@/lib/course-progress";
+import { ProfileEditor } from "@/components/site/ProfileEditor";
 
 export const Route = createFileRoute("/dashboard")({
   beforeLoad: () => {
@@ -31,7 +32,7 @@ export const Route = createFileRoute("/dashboard")({
   component: DashboardPage,
 });
 
-type StudentSection = "overview" | "courses" | "orders";
+type StudentSection = "overview" | "courses" | "orders" | "profile";
 
 function DashboardPage() {
   const { user, loading: authLoading, logout } = useAuth();
@@ -83,6 +84,7 @@ function DashboardPage() {
     { id: "overview", label: "Overview", icon: LayoutDashboard },
     { id: "courses", label: "My Courses", icon: GraduationCap, badge: enrollments.length || undefined },
     { id: "orders", label: "Orders & Payment", icon: Receipt, badge: pendingOrders.length || undefined },
+    { id: "profile", label: "Profile", icon: UserCircle },
   ];
 
   return (
@@ -262,6 +264,12 @@ function DashboardPage() {
               ))}
             </div>
           )}
+        </DashboardSection>
+      )}
+
+      {section === "profile" && (
+        <DashboardSection title="My Profile" description="Update your name and profile photo.">
+          <ProfileEditor />
         </DashboardSection>
       )}
     </DashboardLayout>
