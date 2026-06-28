@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { ChevronDown, MessageCircle, Undo2 } from "lucide-react";
+import { ChevronDown, MessageCircle, Undo2, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ChatPanel, orderRef } from "@/components/site/ChatPanel";
@@ -13,9 +13,10 @@ import { cn } from "@/lib/utils";
 
 type AdminOrderCardProps = {
   order: AdminOrder;
+  onDelete?: () => void;
 };
 
-export function AdminOrderCard({ order }: AdminOrderCardProps) {
+export function AdminOrderCard({ order, onDelete }: AdminOrderCardProps) {
   const queryClient = useQueryClient();
   const [chatOpen, setChatOpen] = useState(false);
   const ref = orderRef(order.id);
@@ -81,6 +82,16 @@ export function AdminOrderCard({ order }: AdminOrderCardProps) {
               }}
             >
               <Undo2 className="h-3.5 w-3.5" /> Unapprove
+            </Button>
+          )}
+          {onDelete && (
+            <Button
+              size="sm"
+              variant="ghost"
+              className="text-destructive hover:text-destructive hover:bg-destructive/10"
+              onClick={onDelete}
+            >
+              <Trash2 className="h-3.5 w-3.5" /> Delete
             </Button>
           )}
         </div>

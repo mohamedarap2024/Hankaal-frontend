@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { Camera, Loader2, User as UserIcon } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -11,15 +12,23 @@ import { ApiError } from "@/lib/api/client";
 
 export function ProfileEditor() {
   const { user, updateProfile } = useAuth();
+  const queryClient = useQueryClient();
   const adminLogo = "/hankaal-logo.png";
   const [name, setName] = useState(user?.name ?? "");
   const [avatar, setAvatar] = useState(user?.avatarUrl ?? (user?.role === "admin" ? adminLogo : ""));
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [imgError, setImgError] = useState(false);
 
   if (!user) return null;
 
   const preview = resolveMediaUrl(avatar) || (user.role === "admin" ? adminLogo : undefined);
+
+  const refreshEverywhere = () => {
+    queryClient.invalidateQueries({ queryKey: ["instructors"] });
+    queryClient.invalidateQueries({ queryKey: ["courses"] });
+    queryClient.invalidateQueries({ queryKey: ["instructor-courses"] });
+  };
 
   const pickImage = () => {
     const input = document.createElement("input");
@@ -32,7 +41,11 @@ export function ProfileEditor() {
       try {
         const { url } = await uploadFile(file, "image");
         setAvatar(url);
-        toast.success("Photo uploaded — click Save to apply.");
+        setImgError(false);
+        // Persist the photo immediately so it really saves and shows on courses.
+        await updateProfile({ avatarUrl: url });
+        refreshEverywhere();
+        toast.success("Profile photo updated!");
       } catch (err) {
         toast.error(err instanceof ApiError ? err.message : "Upload failed");
       } finally {
@@ -50,6 +63,7 @@ export function ProfileEditor() {
     setSaving(true);
     try {
       await updateProfile({ name: name.trim(), avatarUrl: avatar });
+      refreshEverywhere();
       toast.success("Profile updated!");
     } catch (err) {
       toast.error(err instanceof ApiError ? err.message : "Could not save profile");
@@ -65,8 +79,13 @@ export function ProfileEditor() {
       <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5">
         <div className="relative shrink-0">
           <div className="h-24 w-24 rounded-full overflow-hidden border border-border bg-muted grid place-items-center">
-            {preview ? (
-              <img src={preview} alt={user.name} className="h-full w-full object-cover" />
+            {preview && !imgError ? (
+              <img
+                src={preview}
+                alt={user.name}
+                className="h-full w-full object-cover"
+                onError={() => setImgError(true)}
+              />
             ) : (
               <UserIcon className="h-10 w-10 text-muted-foreground" />
             )}

@@ -246,22 +246,15 @@ function AdminDashboard() {
           ) : (
             <div className="space-y-4">
               {(ordersData?.orders ?? []).map((o) => (
-                <div key={o.id} className="relative">
-                  <AdminOrderCard order={o} />
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="absolute top-3 right-3 text-destructive hover:text-destructive"
-                    title="Delete order"
-                    onClick={() => {
-                      if (window.confirm("Delete this order permanently? This does not remove course access.")) {
-                        deleteOrderMut.mutate(o.id);
-                      }
-                    }}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
+                <AdminOrderCard
+                  key={o.id}
+                  order={o}
+                  onDelete={() => {
+                    if (window.confirm("Delete this order permanently? This does not remove course access.")) {
+                      deleteOrderMut.mutate(o.id);
+                    }
+                  }}
+                />
               ))}
             </div>
           )}
