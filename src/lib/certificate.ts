@@ -1,4 +1,4 @@
-import { jsPDF } from "jspdf";
+import type { jsPDF } from "jspdf";
 
 export type CertificateData = {
   studentName: string;
@@ -26,7 +26,9 @@ export function makeCertificateId(enrollmentId: string): string {
 }
 
 /** Build a landscape A4 certificate PDF using only vector drawing (no assets). */
-export function buildCertificate(data: CertificateData): jsPDF {
+export async function buildCertificate(data: CertificateData): Promise<jsPDF> {
+  // Loaded on demand so jsPDF (~150KB) is not shipped in the route bundle.
+  const { jsPDF } = await import("jspdf");
   const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
   const W = doc.internal.pageSize.getWidth(); // ~297mm
   const H = doc.internal.pageSize.getHeight(); // ~210mm
@@ -123,8 +125,8 @@ export function buildCertificate(data: CertificateData): jsPDF {
 }
 
 /** Build the certificate and trigger a browser download. */
-export function downloadCertificate(data: CertificateData): void {
-  const doc = buildCertificate(data);
+export async function downloadCertificate(data: CertificateData): Promise<void> {
+  const doc = await buildCertificate(data);
   const slug =
     data.courseTitle
       .replace(/[^a-z0-9]+/gi, "-")

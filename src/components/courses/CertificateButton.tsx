@@ -26,9 +26,9 @@ export function CertificateButton({
   variant = "accent",
   className,
 }: CertificateButtonProps) {
-  const handleDownload = () => {
+  const handleDownload = async () => {
     try {
-      downloadCertificate({
+      await downloadCertificate({
         studentName,
         courseTitle,
         instructorName,
