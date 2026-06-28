@@ -18,11 +18,13 @@ export function ProfileEditor() {
   const [avatar, setAvatar] = useState(user?.avatarUrl ?? (user?.role === "admin" ? adminLogo : ""));
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [imgError, setImgError] = useState(false);
+  // Track which exact src failed, so a freshly uploaded photo always gets a clean attempt.
+  const [erroredSrc, setErroredSrc] = useState<string | null>(null);
 
   if (!user) return null;
 
   const preview = resolveMediaUrl(avatar) || (user.role === "admin" ? adminLogo : undefined);
+  const showImg = !!preview && erroredSrc !== preview;
 
   const refreshEverywhere = () => {
     queryClient.invalidateQueries({ queryKey: ["instructors"] });
@@ -41,7 +43,7 @@ export function ProfileEditor() {
       try {
         const { url } = await uploadFile(file, "image");
         setAvatar(url);
-        setImgError(false);
+        setErroredSrc(null);
         // Persist the photo immediately so it really saves and shows on courses.
         await updateProfile({ avatarUrl: url });
         refreshEverywhere();
@@ -79,12 +81,13 @@ export function ProfileEditor() {
       <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5">
         <div className="relative shrink-0">
           <div className="h-24 w-24 rounded-full overflow-hidden border border-border bg-muted grid place-items-center">
-            {preview && !imgError ? (
+            {showImg ? (
               <img
+                key={preview}
                 src={preview}
                 alt={user.name}
                 className="h-full w-full object-cover"
-                onError={() => setImgError(true)}
+                onError={() => setErroredSrc(preview ?? null)}
               />
             ) : (
               <UserIcon className="h-10 w-10 text-muted-foreground" />

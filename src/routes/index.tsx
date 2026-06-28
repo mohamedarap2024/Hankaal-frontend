@@ -76,7 +76,8 @@ function HomePage() {
   });
 
   const popular = (coursesData?.courses ?? fallbackCourses).slice(0, 6);
-  const instructors = instructorsData?.instructors ?? [];
+  // Only show educators who have actually created courses.
+  const instructors = (instructorsData?.instructors ?? []).filter((ins) => ins.courseCount > 0);
   const stats = statsData?.stats ?? fallbackStats;
   const testimonials = testimonialsData?.testimonials ?? fallbackTestimonials;
   const faqs = faqsData?.faqs ?? fallbackFaqs;
