@@ -10,6 +10,7 @@ import { isGradient, resolveMediaUrl } from "@/lib/media";
 import { useAuth } from "@/contexts/AuthContext";
 import { addToCart } from "@/lib/api/cart";
 import { enrollInCourse, fetchEnrollments } from "@/lib/api/enrollments";
+import { fetchInstructors } from "@/lib/api/content";
 import { ApiError } from "@/lib/api/client";
 import { toast } from "sonner";
 
@@ -32,6 +33,16 @@ export function CourseCard({ course, index = 0 }: { course: Course; index?: numb
     staleTime: 60_000,
   });
   const isEnrolled = enrollmentsData?.enrollments?.some((e) => e.courseId === course.id) ?? false;
+
+  // Prefer the instructor's current photo (from the live instructors list) over the
+  // snapshot stored on the course, so a freshly updated profile photo shows here too.
+  const { data: instructorsData } = useQuery({
+    queryKey: ["instructors"],
+    queryFn: fetchInstructors,
+    staleTime: 60_000,
+  });
+  const liveAvatar = instructorsData?.instructors?.find((i) => i.name === course.instructor.name)?.avatar;
+  const instructorAvatar = liveAvatar || course.instructor.avatar;
 
   const handlePrimaryAction = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -115,7 +126,7 @@ export function CourseCard({ course, index = 0 }: { course: Course; index?: numb
         </Link>
         <div className="flex items-center gap-2 mt-1.5">
           <img
-            src={resolveMediaUrl(course.instructor.avatar) || course.instructor.avatar}
+            src={resolveMediaUrl(instructorAvatar) || instructorAvatar}
             alt={course.instructor.name}
             className="h-5 w-5 rounded-full object-cover bg-muted shrink-0"
             onError={(e) => { (e.currentTarget as HTMLImageElement).src = "https://i.pravatar.cc/150?img=68"; }}
