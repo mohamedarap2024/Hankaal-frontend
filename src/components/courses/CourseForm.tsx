@@ -42,6 +42,8 @@ export function CourseForm({ onSubmit, loading, submitLabel = "Save Course", onC
   const [videoUrl, setVideoUrl] = useState(initialValues?.videoUrl ?? "");
   const [thumbnail, setThumbnail] = useState(initialValues?.thumbnail ?? "");
   const [lessonUploading, setLessonUploading] = useState<string | null>(null);
+  const [midterm, setMidterm] = useState<QuizQuestion[]>(initialValues?.midtermExam?.questions ?? []);
+  const [final, setFinal] = useState<QuizQuestion[]>(initialValues?.finalExam?.questions ?? []);
 
   const handleLessonVideoUpload = async (si: number, li: number, file: File) => {
     const key = `${si}-${li}`;
@@ -80,6 +82,8 @@ export function CourseForm({ onSubmit, loading, submitLabel = "Save Course", onC
       instructorName: (form.get("instructorName") as string)?.trim() || undefined,
       instructorPercentage: isFree ? undefined : Number(form.get("instructorPercentage")) || undefined,
       objectives: objectives.filter((o) => o.trim()),
+      midtermExam: midterm.some((q) => q.question.trim()) ? { questions: midterm.filter((q) => q.question.trim()) } : undefined,
+      finalExam: final.some((q) => q.question.trim()) ? { questions: final.filter((q) => q.question.trim()) } : undefined,
       curriculum: curriculum
         .filter((s) => s.section.trim() && s.lessons.length > 0)
         .map((s) => ({
@@ -446,6 +450,21 @@ export function CourseForm({ onSubmit, loading, submitLabel = "Save Course", onC
         </div>
       </div>
 
+      <div>
+        <div className="mb-4">
+          <h3 className="font-display font-bold text-lg flex items-center gap-2">
+            <HelpCircle className="h-5 w-5 text-primary" /> Course Exams
+          </h3>
+          <p className="text-sm text-muted-foreground mt-1">
+            The <strong>Midterm</strong> unlocks after a student watches 50% of the videos; the <strong>Final</strong> unlocks at 100%.
+          </p>
+        </div>
+        <div className="grid gap-4">
+          <ExamEditor label="Midterm Exam (unlocks at 50%)" questions={midterm} onChange={setMidterm} />
+          <ExamEditor label="Final Exam (unlocks at 100%)" questions={final} onChange={setFinal} />
+        </div>
+      </div>
+
       <div className="flex gap-3 pt-2">
         <Button type="submit" variant="hero" disabled={loading}>
           {loading ? "Saving..." : submitLabel}
@@ -455,5 +474,77 @@ export function CourseForm({ onSubmit, loading, submitLabel = "Save Course", onC
         )}
       </div>
     </form>
+  );
+}
+
+function ExamEditor({
+  label,
+  questions,
+  onChange,
+}: {
+  label: string;
+  questions: QuizQuestion[];
+  onChange: (q: QuizQuestion[]) => void;
+}) {
+  const setQ = (qi: number, patch: Partial<QuizQuestion>) =>
+    onChange(questions.map((q, i) => (i === qi ? { ...q, ...patch } : q)));
+
+  return (
+    <div className="p-4 rounded-xl border border-border bg-muted/30 space-y-3">
+      <div className="flex items-center justify-between">
+        <span className="font-semibold text-sm flex items-center gap-1.5">
+          <HelpCircle className="h-4 w-4 text-primary" /> {label} · {questions.length} question{questions.length === 1 ? "" : "s"}
+        </span>
+        <Button
+          type="button"
+          size="sm"
+          variant="outline"
+          onClick={() => onChange([...questions, { question: "", options: ["", ""], correctIndex: 0 }])}
+        >
+          <Plus className="h-3 w-3" /> Add Question
+        </Button>
+      </div>
+      {questions.length === 0 && <p className="text-xs text-muted-foreground">No questions yet — this exam is optional.</p>}
+      {questions.map((q, qi) => (
+        <div key={qi} className="p-3 rounded-lg bg-background space-y-2">
+          <div className="flex gap-2">
+            <Input
+              value={q.question}
+              onChange={(e) => setQ(qi, { question: e.target.value })}
+              placeholder={`Question ${qi + 1}`}
+              className="h-8"
+            />
+            <Button type="button" variant="ghost" size="icon" onClick={() => onChange(questions.filter((_, i) => i !== qi))}>
+              <Trash2 className="h-4 w-4 text-destructive" />
+            </Button>
+          </div>
+          {q.options.map((opt, oi) => (
+            <div key={oi} className="flex gap-2 items-center">
+              <input
+                type="radio"
+                name={`${label}-${qi}`}
+                checked={q.correctIndex === oi}
+                onChange={() => setQ(qi, { correctIndex: oi })}
+                title="Mark as correct answer"
+              />
+              <Input
+                value={opt}
+                onChange={(e) => setQ(qi, { options: q.options.map((o, i) => (i === oi ? e.target.value : o)) })}
+                placeholder={`Option ${oi + 1}`}
+                className="h-8"
+              />
+            </div>
+          ))}
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            onClick={() => setQ(qi, { options: [...q.options, ""] })}
+          >
+            + Option
+          </Button>
+        </div>
+      ))}
+    </div>
   );
 }

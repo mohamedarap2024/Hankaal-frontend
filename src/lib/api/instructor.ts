@@ -26,6 +26,8 @@ export type CreateCoursePayload = {
   objectives: string[];
   curriculum: CurriculumSection[];
   quizzes?: QuizInput[];
+  midtermExam?: { questions: QuizQuestion[] };
+  finalExam?: { questions: QuizQuestion[] };
 };
 
 export type InstructorCourseStats = {
@@ -134,5 +136,7 @@ export function courseToFormValues(course: Course & { quizzes?: QuizInput[] }): 
     quizzes: course.quizzes
       ?.filter((q) => !q.lessonKey)
       .map((q) => ({ title: q.title, questions: q.questions })),
+    midtermExam: course.midtermExam?.questions?.length ? { questions: course.midtermExam.questions } : undefined,
+    finalExam: course.finalExam?.questions?.length ? { questions: course.finalExam.questions } : undefined,
   };
 }

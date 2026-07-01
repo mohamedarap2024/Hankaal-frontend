@@ -20,6 +20,8 @@ export type Course = {
   videoUrl?: string;
   badge?: string;
   instructorPercentage?: number;
+  midtermExam?: { questions: { question: string; options: string[]; correctIndex: number }[] };
+  finalExam?: { questions: { question: string; options: string[]; correctIndex: number }[] };
   objectives: string[];
   curriculum: {
     section: string;

@@ -1,7 +1,7 @@
 import { createFileRoute, Link, redirect, notFound } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, CheckCircle2, PlayCircle, BookOpen, HelpCircle, Video, Award } from "lucide-react";
+import { ArrowLeft, CheckCircle2, PlayCircle, BookOpen, HelpCircle, Video, Award, Lock } from "lucide-react";
 import { SiteShell } from "@/components/site/SiteShell";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -152,6 +152,14 @@ function CourseLearnPage() {
     ? [{ id: `lesson-quiz-${activeIndex}`, title: `${activeLesson.title} Quiz`, questions: activeLesson.quiz.questions }]
     : [];
 
+  const midtermQuiz: Quiz[] = course.midtermExam?.questions?.length
+    ? [{ id: "exam-midterm", title: "Midterm Exam", questions: course.midtermExam.questions }]
+    : [];
+  const finalQuiz: Quiz[] = course.finalExam?.questions?.length
+    ? [{ id: "exam-final", title: "Final Exam", questions: course.finalExam.questions }]
+    : [];
+  const hasExams = midtermQuiz.length > 0 || finalQuiz.length > 0;
+
   const canAccess = isEnrolled || isAdmin || isOwner;
 
   if (!canAccess) {
@@ -175,10 +183,14 @@ function CourseLearnPage() {
 
   const progress = enrollmentData?.progress ?? 0;
 
-  const requiredQuizIds = quizzes.map((q) => q.id);
+  const requiredQuizIds = [...quizzes, ...midtermQuiz, ...finalQuiz].map((q) => q.id);
   const allLessonsWatched = lessons.length === 0 || lessons.every((_, i) => watched.has(i));
   const allQuizzesDone = requiredQuizIds.every((id) => completedQuizzes.has(id));
   const fullyCompleted = allLessonsWatched && allQuizzesDone;
+
+  const watchedFraction = lessons.length > 0 ? watched.size / lessons.length : 1;
+  const midtermUnlocked = watchedFraction >= 0.5;
+  const finalUnlocked = lessons.length === 0 || watched.size >= lessons.length;
 
   const persist = (nextWatched: Set<number>, nextQuizzes: Set<string>) => {
     if (courseId) saveCourseProgress(courseId, { watched: [...nextWatched], quizzes: [...nextQuizzes] });
@@ -276,13 +288,18 @@ function CourseLearnPage() {
         )}
 
         <Tabs value={tab} onValueChange={setTab} className="space-y-6">
-          <TabsList className="grid w-full max-w-md grid-cols-2">
+          <TabsList className={`grid w-full max-w-xl ${hasExams ? "grid-cols-3" : "grid-cols-2"}`}>
             <TabsTrigger value="lessons" className="gap-2">
               <Video className="h-4 w-4" /> Lessons ({lessons.length})
             </TabsTrigger>
             <TabsTrigger value="quizzes" className="gap-2">
               <HelpCircle className="h-4 w-4" /> Quizzes ({quizzes.length})
             </TabsTrigger>
+            {hasExams && (
+              <TabsTrigger value="exams" className="gap-2">
+                <Award className="h-4 w-4" /> Exams
+              </TabsTrigger>
+            )}
           </TabsList>
 
           <TabsContent value="lessons">
@@ -349,8 +366,79 @@ function CourseLearnPage() {
               <QuizPanel quizzes={quizzes} onComplete={handleQuizComplete} />
             )}
           </TabsContent>
+
+          {hasExams && (
+            <TabsContent value="exams">
+              <div className="space-y-6">
+                {midtermQuiz.length > 0 && (
+                  <ExamBlock
+                    title="Midterm Exam"
+                    subtitle="Unlocks after you watch 50% of the lessons."
+                    unlocked={midtermUnlocked}
+                    lockedHint={`Watch ${Math.max(0, Math.ceil(lessons.length * 0.5) - watched.size)} more lesson(s) to unlock.`}
+                    passed={completedQuizzes.has("exam-midterm")}
+                    quiz={midtermQuiz}
+                    onComplete={handleQuizComplete}
+                  />
+                )}
+                {finalQuiz.length > 0 && (
+                  <ExamBlock
+                    title="Final Exam"
+                    subtitle="Unlocks after you watch 100% of the lessons."
+                    unlocked={finalUnlocked}
+                    lockedHint={`Watch all ${lessons.length} lessons to unlock (${watched.size}/${lessons.length} done).`}
+                    passed={completedQuizzes.has("exam-final")}
+                    quiz={finalQuiz}
+                    onComplete={handleQuizComplete}
+                  />
+                )}
+              </div>
+            </TabsContent>
+          )}
         </Tabs>
       </div>
     </SiteShell>
+  );
+}
+
+function ExamBlock({
+  title,
+  subtitle,
+  unlocked,
+  lockedHint,
+  passed,
+  quiz,
+  onComplete,
+}: {
+  title: string;
+  subtitle: string;
+  unlocked: boolean;
+  lockedHint: string;
+  passed: boolean;
+  quiz: Quiz[];
+  onComplete: (quizId: string, passed: boolean) => void;
+}) {
+  return (
+    <div className="rounded-2xl border border-border bg-card p-5">
+      <div className="flex flex-wrap items-center gap-2">
+        <h3 className="font-display font-bold text-lg flex items-center gap-2">
+          <Award className="h-5 w-5 text-accent" /> {title}
+        </h3>
+        {passed && (
+          <span className="text-xs font-semibold text-green-600 inline-flex items-center gap-1">
+            <CheckCircle2 className="h-4 w-4" /> Passed
+          </span>
+        )}
+      </div>
+      <p className="text-sm text-muted-foreground mt-1">{subtitle}</p>
+      {unlocked ? (
+        <QuizPanel quizzes={quiz} autoStart onComplete={onComplete} />
+      ) : (
+        <div className="flex items-center gap-3 rounded-xl border border-dashed border-border p-4 text-sm text-muted-foreground mt-4">
+          <Lock className="h-5 w-5 shrink-0" />
+          <span>{lockedHint}</span>
+        </div>
+      )}
+    </div>
   );
 }
