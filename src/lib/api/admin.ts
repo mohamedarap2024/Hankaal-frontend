@@ -45,6 +45,7 @@ export type AdminOrder = {
   amount: number;
   status: string;
   ussdCode?: string;
+  paymentPhone?: string;
   courseTitle: string;
   courseId: string;
   userId: string;
