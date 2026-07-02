@@ -1,5 +1,6 @@
 import { createFileRoute, Link, redirect, useNavigate } from "@tanstack/react-router";
-import { SITE_CONTACT, ussdPaymentHint } from "@/lib/site-contact";
+import { SITE_CONTACT } from "@/lib/site-contact";
+import { useSiteContact } from "@/lib/use-site-contact";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { ShoppingCart, Trash2, CreditCard } from "lucide-react";
 import { useState } from "react";
@@ -26,7 +27,8 @@ export const Route = createFileRoute("/cart")({
 function CartPage() {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
-  const [phone, setPhone] = useState(SITE_CONTACT.phoneDial);
+  const contact = useSiteContact();
+  const [phone, setPhone] = useState<string>(SITE_CONTACT.phoneDial);
   const [checkoutResult, setCheckoutResult] = useState<{
     orderId: string;
     ussdCode: string;
@@ -131,10 +133,14 @@ function CartPage() {
                 <p className="text-muted-foreground">Course: <strong>{checkoutResult.courseTitle}</strong></p>
                 <p className="text-muted-foreground">Amount: <strong>${checkoutResult.amount}</strong></p>
 
-                <div className="p-4 rounded-xl bg-muted text-center space-y-2">
-                  <p className="text-sm font-medium">Step 1 — Dial on your phone:</p>
-                  <p className="text-2xl font-mono font-bold text-primary">{checkoutResult.ussdCode}</p>
-                  <p className="text-xs text-muted-foreground">Format: {ussdPaymentHint(checkoutResult.amount)}</p>
+                <div className="p-4 rounded-xl bg-muted space-y-3">
+                  <p className="text-sm font-medium text-center">Step 1 — Dial one of these on your phone:</p>
+                  {contact.ussdMethods(checkoutResult.amount).map((m) => (
+                    <div key={m.label} className="flex items-center justify-between gap-2 rounded-lg bg-background px-3 py-2">
+                      <span className="text-sm font-semibold text-muted-foreground">{m.label}</span>
+                      <span className="text-lg font-mono font-bold text-primary">{m.code}</span>
+                    </div>
+                  ))}
                 </div>
 
                 <Button

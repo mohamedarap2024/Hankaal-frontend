@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { SITE_CONTACT, ussdPaymentHint } from "@/lib/site-contact";
+import { useSiteContact } from "@/lib/use-site-contact";
 import { ChevronDown, CreditCard, MessageCircle } from "lucide-react";
 import { WhatsAppLink, WHATSAPP_URL } from "@/components/site/WhatsAppLink";
 import { Badge } from "@/components/ui/badge";
@@ -19,6 +19,7 @@ type StudentOrderCardProps = {
 
 export function StudentOrderCard({ order }: StudentOrderCardProps) {
   const queryClient = useQueryClient();
+  const contact = useSiteContact();
   const [chatOpen, setChatOpen] = useState(false);
   const ref = orderRef(order.id);
 
@@ -57,10 +58,14 @@ export function StudentOrderCard({ order }: StudentOrderCardProps) {
 
       {showPayment && order.ussdCode && (
         <div className="p-4 rounded-xl bg-muted/60 space-y-3 border border-border">
-          <p className="text-sm font-medium">Step 1 — Pay on your phone</p>
-          <p className="text-xs text-muted-foreground">Dial this USSD code for order #{ref}:</p>
-          <p className="text-xl font-mono font-bold text-primary text-center py-2">{order.ussdCode}</p>
-          <p className="text-xs text-muted-foreground text-center">Format: {ussdPaymentHint("amount")} · WhatsApp {SITE_CONTACT.phone}</p>
+          <p className="text-sm font-medium">Step 1 — Pay on your phone (order #{ref})</p>
+          {contact.ussdMethods(order.amount).map((m) => (
+            <div key={m.label} className="flex items-center justify-between gap-2 rounded-lg bg-background px-3 py-2">
+              <span className="text-sm font-semibold text-muted-foreground">{m.label}</span>
+              <span className="text-base font-mono font-bold text-primary">{m.code}</span>
+            </div>
+          ))}
+          <p className="text-xs text-muted-foreground text-center">After paying, confirm below · WhatsApp {contact.phones[0]}</p>
           <Button
             variant="hero"
             className="w-full"

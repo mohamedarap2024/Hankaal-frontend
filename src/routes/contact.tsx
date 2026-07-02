@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Mail, MapPin, Phone, Send, MessageCircle } from "lucide-react";
-import { SITE_CONTACT } from "@/lib/site-contact";
+import { useSiteContact } from "@/lib/use-site-contact";
 import { WhatsAppLink } from "@/components/site/WhatsAppLink";
 import { useState } from "react";
 import { SiteShell } from "@/components/site/SiteShell";
@@ -26,6 +26,7 @@ export const Route = createFileRoute("/contact")({
 
 function ContactPage() {
   const [loading, setLoading] = useState(false);
+  const contact = useSiteContact();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -60,11 +61,17 @@ function ContactPage() {
         <div className="grid lg:grid-cols-[1fr_1.4fr] gap-8 mt-12 max-w-5xl mx-auto">
           <div className="space-y-4">
             {[
-              { icon: Mail, title: "Email", value: SITE_CONTACT.email, href: `mailto:${SITE_CONTACT.email}`, desc: "We reply within 24 hours" },
-              { icon: Phone, title: "Phone / WhatsApp", value: SITE_CONTACT.phone, href: `tel:${SITE_CONTACT.phone.replace(/\s/g, "")}`, desc: "Call or message anytime" },
-              { icon: MapPin, title: "Location", value: SITE_CONTACT.location, desc: "Online classes worldwide" },
+              { icon: Mail, title: "Email", value: contact.email, href: `mailto:${contact.email}`, desc: "We reply within 24 hours" },
+              ...contact.phones.map((phone, i) => ({
+                icon: Phone,
+                title: i === 0 ? "Phone / WhatsApp" : "Phone",
+                value: phone,
+                href: `tel:${phone.replace(/\s/g, "")}`,
+                desc: "Call or message anytime",
+              })),
+              { icon: MapPin, title: "Location", value: contact.location, href: undefined as string | undefined, desc: "Online classes worldwide" },
             ].map((c) => (
-              <div key={c.title} className="p-5 rounded-2xl bg-card border border-border flex gap-4">
+              <div key={c.value} className="p-5 rounded-2xl bg-card border border-border flex gap-4">
                 <div className="h-11 w-11 rounded-xl grid place-items-center text-primary-foreground shrink-0" style={{ background: "var(--gradient-hero)" }}>
                   <c.icon className="h-5 w-5" />
                 </div>
@@ -81,9 +88,9 @@ function ContactPage() {
             ))}
             <div className="p-5 rounded-2xl bg-card border border-border flex flex-col gap-3">
               <div className="flex items-center gap-2 font-semibold"><MessageCircle className="h-5 w-5 text-primary" /> Quick contact</div>
-              <WhatsAppLink href={SITE_CONTACT.whatsappUrl} label="Chat on WhatsApp" variant="button" className="w-full" />
+              <WhatsAppLink href={contact.whatsappUrl} label="Chat on WhatsApp" variant="button" className="w-full" />
               <a
-                href={SITE_CONTACT.facebookUrl}
+                href={contact.facebookUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-sm font-semibold text-primary hover:underline text-center"

@@ -1,10 +1,11 @@
 import { Link } from "@tanstack/react-router";
 import { Facebook, Mail, MapPin, Phone } from "lucide-react";
 import { Logo } from "./Logo";
-import { SITE_CONTACT } from "@/lib/site-contact";
+import { useSiteContact } from "@/lib/use-site-contact";
 import { WhatsAppLink } from "./WhatsAppLink";
 
 export function Footer() {
+  const contact = useSiteContact();
   return (
     <footer className="bg-secondary/50 border-t border-border mt-20">
       <div className="container mx-auto px-4 py-14">
@@ -12,11 +13,11 @@ export function Footer() {
           <div className="space-y-4">
             <Logo size={56} />
             <p className="text-sm text-muted-foreground max-w-xs">
-              {SITE_CONTACT.description}
+              {contact.description}
             </p>
             <div className="flex flex-wrap gap-2">
               <a
-                href={SITE_CONTACT.facebookUrl}
+                href={contact.facebookUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="h-9 w-9 grid place-items-center rounded-full bg-background border border-border text-muted-foreground hover:text-primary hover:border-primary transition-colors"
@@ -24,7 +25,7 @@ export function Footer() {
               >
                 <Facebook className="h-4 w-4" />
               </a>
-              <WhatsAppLink href={SITE_CONTACT.whatsappUrl} label="" className="!h-9 !w-9 !p-0 !rounded-full" />
+              <WhatsAppLink href={contact.whatsappUrl} label="" className="!h-9 !w-9 !p-0 !rounded-full" />
             </div>
           </div>
           <div>
@@ -40,27 +41,29 @@ export function Footer() {
             <h4 className="font-semibold mb-4 text-foreground">Support</h4>
             <ul className="space-y-2.5 text-sm text-muted-foreground">
               <li><Link to="/contact" className="hover:text-primary">Help & Contact</Link></li>
-              <li><a href={SITE_CONTACT.facebookUrl} target="_blank" rel="noopener noreferrer" className="hover:text-primary">Facebook Page</a></li>
+              <li><a href={contact.facebookUrl} target="_blank" rel="noopener noreferrer" className="hover:text-primary">Facebook Page</a></li>
             </ul>
           </div>
           <div>
             <h4 className="font-semibold mb-4 text-foreground">Contact</h4>
             <ul className="space-y-2.5 text-sm text-muted-foreground">
-              <li className="flex items-start gap-2"><MapPin className="h-4 w-4 mt-0.5 text-primary shrink-0" /> {SITE_CONTACT.location}</li>
+              <li className="flex items-start gap-2"><MapPin className="h-4 w-4 mt-0.5 text-primary shrink-0" /> {contact.location}</li>
               <li className="flex items-center gap-2">
                 <Mail className="h-4 w-4 text-primary shrink-0" />
-                <a href={`mailto:${SITE_CONTACT.email}`} className="hover:text-primary">{SITE_CONTACT.email}</a>
+                <a href={`mailto:${contact.email}`} className="hover:text-primary">{contact.email}</a>
               </li>
-              <li className="flex items-center gap-2">
-                <Phone className="h-4 w-4 text-primary shrink-0" />
-                <a href={`tel:${SITE_CONTACT.phone.replace(/\s/g, "")}`} className="hover:text-primary">{SITE_CONTACT.phone}</a>
-              </li>
+              {contact.phones.map((phone) => (
+                <li key={phone} className="flex items-center gap-2">
+                  <Phone className="h-4 w-4 text-primary shrink-0" />
+                  <a href={`tel:${phone.replace(/\s/g, "")}`} className="hover:text-primary">{phone}</a>
+                </li>
+              ))}
             </ul>
           </div>
         </div>
         <div className="mt-12 pt-6 border-t border-border flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-muted-foreground">
-          <p>© {new Date().getFullYear()} {SITE_CONTACT.name}. All rights reserved.</p>
-          <p className="italic">{SITE_CONTACT.tagline}</p>
+          <p>© {new Date().getFullYear()} {contact.name}. All rights reserved.</p>
+          <p className="italic">{contact.tagline}</p>
         </div>
       </div>
     </footer>

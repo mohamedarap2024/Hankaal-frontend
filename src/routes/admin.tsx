@@ -649,9 +649,16 @@ function AdminDashboard() {
                     queryClient.invalidateQueries({ queryKey: ["site-settings"] });
                   }}
                 >
-                  {["logo_url", "hero_image_url", "about_video_url", "whatsapp_url", "payment_ussd_prefix", "payment_ussd_suffix", "site_name", "site_tagline", "contact_email", "contact_phone", "facebook_url"].map((key) => (
+                  {["logo_url", "hero_image_url", "about_video_url", "whatsapp_url", "payment_ussd_prefix", "ussd_edahab", "ussd_jeeb", "payment_ussd_suffix", "site_name", "site_tagline", "contact_email", "contact_phone", "facebook_url"].map((key) => (
                     <div key={key} className={key === "hero_image_url" || key === "about_video_url" ? "sm:col-span-2 space-y-1" : "space-y-1"}>
-                      <Label>{key === "hero_image_url" ? "cover image url" : key.replace(/_/g, " ")}</Label>
+                      <Label>{
+                        key === "hero_image_url" ? "cover image url"
+                        : key === "payment_ussd_prefix" ? "EVC ussd (e.g. *712*614422002*)"
+                        : key === "ussd_edahab" ? "eDahab ussd (e.g. *713*614422002*)"
+                        : key === "ussd_jeeb" ? "Jeeb ussd (e.g. *812*614422002*)"
+                        : key === "contact_phone" ? "contact phone (separate numbers with a comma)"
+                        : key.replace(/_/g, " ")
+                      }</Label>
                       <Input
                         name={key}
                         defaultValue={settingsData?.settings?.[key] ?? ""}

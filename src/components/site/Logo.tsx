@@ -20,6 +20,7 @@ export function Logo({ size = 48, withText = false, className }: LogoProps) {
 
   const logoUrl = data?.settings?.logo_url ?? "/hankaal-logo.png";
   const siteName = data?.settings?.site_name ?? "Hankaal College";
+  const tagline = data?.settings?.site_tagline?.trim() || "Practice · Patience · Progress";
 
   return (
     <Link
@@ -45,8 +46,8 @@ export function Logo({ size = 48, withText = false, className }: LogoProps) {
           >
             Hankaal College
           </span>
-          <span className="hidden sm:block text-[9px] uppercase tracking-[0.18em] text-muted-foreground mt-1">
-            Practice · Patience · Progress
+          <span className="hidden sm:block text-[12px] uppercase tracking-[0.16em] text-muted-foreground mt-1">
+            {tagline}
           </span>
         </div>
       )}
