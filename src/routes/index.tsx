@@ -268,7 +268,7 @@ function HomePage() {
 
       {/* Testimonials */}
       <section className="container mx-auto px-4 py-20">
-        <SectionHeader eyebrow="Student Stories" title="Real journeys, real outcomes" desc="Hear from learners who've turned ambition into achievement." />
+        <SectionHeader eyebrow="Student Testimonials" title="Real journeys, real outcomes" desc="Hear from learners who've turned ambition into achievement." />
         <div className="grid gap-6 md:grid-cols-3 mt-12">
           {testimonials.map((t, i) => (
             <motion.div key={t.name} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.08 }}

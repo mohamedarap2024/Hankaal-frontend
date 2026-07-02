@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState, useMemo } from "react";
 import {
   BookOpen, Mail, Trash2, Users, GraduationCap, MessageSquare, Plus, LayoutDashboard, Pencil, PlayCircle, Settings, Receipt, UserCircle,
-  Search, DollarSign, TrendingUp, Wallet, UserCheck, CheckCheck, Phone,
+  Search, DollarSign, TrendingUp, Wallet, UserCheck, CheckCheck,
 } from "lucide-react";
 import { DashboardLayout, DashboardSection, StatGrid, ContentCard } from "@/components/dashboard/DashboardLayout";
 import { AdminOrderCard } from "@/components/site/AdminOrderCard";
@@ -651,13 +651,13 @@ function AdminDashboard() {
                 >
                   {["logo_url", "hero_image_url", "about_video_url", "whatsapp_url", "payment_ussd_prefix", "payment_ussd_suffix", "site_name", "site_tagline", "contact_email", "contact_phone", "facebook_url"].map((key) => (
                     <div key={key} className={key === "hero_image_url" || key === "about_video_url" ? "sm:col-span-2 space-y-1" : "space-y-1"}>
-                      <Label>{key.replace(/_/g, " ")}</Label>
+                      <Label>{key === "hero_image_url" ? "cover image url" : key.replace(/_/g, " ")}</Label>
                       <Input
                         name={key}
                         defaultValue={settingsData?.settings?.[key] ?? ""}
                         placeholder={
                           key === "hero_image_url"
-                            ? "Paste image link (URL) for homepage hero"
+                            ? "Paste cover image link (URL) for the homepage"
                             : key === "about_video_url"
                               ? "Paste video link (YouTube or .mp4) for the About page"
                               : key === "logo_url"
@@ -679,7 +679,7 @@ function AdminDashboard() {
               </ContentCard>
 
               <div>
-                <h3 className="font-bold mb-4">Student Stories</h3>
+                <h3 className="font-bold mb-4">Student Testimonials</h3>
                 <div className="space-y-3">
                   {(testimonialsData?.testimonials ?? []).map((t) => (
                     <form

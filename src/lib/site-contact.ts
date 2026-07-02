@@ -5,7 +5,7 @@ export const SITE_URL =
 /** Official Hankaal College contact & payment defaults */
 export const SITE_CONTACT = {
   name: "Hankaal College",
-  email: "hankaalcollege@gmail.com",
+  email: "infohankaal@gmail.com",
   phone: "+252 61 4422002",
   phoneDial: "614422002",
   whatsappUrl: "https://wa.me/252614422002",
@@ -20,10 +20,9 @@ export const SITE_CONTACT = {
 
 export const COURSE_CATEGORIES = [
   "Languages",
-  "Programming",
-  "Design",
+  "Primary",
+  "Secondary",
   "Business",
-  "Data Science",
   "Marketing",
 ] as const;
 
